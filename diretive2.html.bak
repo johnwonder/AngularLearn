@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en" ng-app="myapp">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Document</title>
+    <script src="js/angular.min.js"></script>
+	  <script src="js/diretive2.js"></script>
+ </head>
+ <body >
+  <input type='text' ng-model='color' placeholder='Enter a color'/>
+  <hello-world/>
+ </body>
+</html>

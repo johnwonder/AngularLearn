@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en" ng-app="myapp">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Document</title>
+    <script src="js/angular.min.js"></script>
+	  <script src="js/part7.js"></script>
+ </head>
+ <body>
+  <p ng-init='name= "Ari John"'>Hello,{{name}}</p>
+
+  <button ng-click="counter = counter+1">Add one</button>
+  Current counter:{{counter}}
+
+  <button ng-init="shouldShow=true" ng-click="shouldShow=!shouldShow">Flip the shouldShow variable</button>
+  <div ng-show="shouldShow">
+  <h3>Showing {{shouldShow}}</h3>
+  </div>
+  <div ng-hide="shouldShow">
+  <h3>Hiding {{shouldShow}}</h3>
+  </div>
+
+  <ul ng-controller="MyController">
+  <li ng-repeat="person in roommates">{{person.name}}</li>
+  </ul>
+
+   <ul ng-controller="MyController">
+  <li ng-repeat="(name,color) in people">{{name}}'s favorite color is {{color}}</li>
+  </ul>
+ </body>
+</html>
