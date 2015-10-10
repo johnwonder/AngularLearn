@@ -15,7 +15,7 @@ myModule.directive("drink",function(){
 		link:function(scope,element,attrs){
 			//scope.water = attrs.water;
 			//scope.pureWater="脏水";
-			alert(scope.Water);
+			alert(scope.water);
 		},
 		template:'<div>{{water}}</div>'
 		
