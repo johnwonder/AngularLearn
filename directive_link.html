@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en" ng-app="TheNG">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Document</title>
+ </head>
+ <body>
+	<div ng-controller="MyCtrl">
+		Ctrl:
+		<br/>
+	<!-- 	<input type="text" ng-model="pureWater" /> -->
+		<br/>
+		Directive:
+		<br/>
+		 <div my-directive name="{{name}}" age="age" sex1="{{sex}}" say="say()"></div>
+		 <!-- <my-directive name="{{name}}"></my-directive> -->
+	</div>
+	  <script src="js/angular.min.js"></script>
+	  <script src="js/diretive_link.js"></script>
+ </body>
+</html>

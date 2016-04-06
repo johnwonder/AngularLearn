@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en" ng-app="ui.bootstrap.alert">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Document</title>
+    <script src="js/angular.min.js"></script>
+	  <script src="js/drective_new2.js"></script>
+ </head>
+ <body>
+ <div ng-controller="AlertDemoCtrl">
+ 	<alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
+ 	<button class="btn btn-default" ng-click="addAlert()">Add Alert</button>
+ </div>
+ </body>
+</html>
