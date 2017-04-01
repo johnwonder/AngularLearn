@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<script type="text/javascript" src="js/angular.js"></script>
+	<style type="text/css">
+		#id {height:500px;}
+  #bottom {margin-top:1500px;}
+	</style>
+</head>
+<body>
+	
+
+  <div ng-app="Demo" ng-controller="testCtrl as ctrl">
+      <div id="top" ng-click="ctrl.gotoBottom()">跳到底部</div>
+      <div id="bottom" ng-click="ctrl.gotoTop()">跳到顶部</div>
+  </div>
+
+<script type="text/javascript">
+	
+	(function () {
+    angular.module("Demo", [])
+    .controller("testCtrl",["$location", "$anchorScroll",testCtrl]);
+    function testCtrl($location,$anchorScroll){
+      this.gotoTop = function () {
+        $location.hash("top");
+        // $anchorScroll();
+      };
+      this.gotoBottom = function () {
+        $location.hash("bottom");
+        // $anchorScroll();
+      };
+    };
+  }());
+</script>
+</body>
+</html>
