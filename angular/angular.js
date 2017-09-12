@@ -47,6 +47,7 @@ function minErr(module, ErrorConstructor) {
       paramPrefix, i;
 
     message += template.replace(/\{\d+\}/g, function(match) {
+      //slice {0} 就提取出0
       var index = +match.slice(1, -1),
         shiftedIndex = index + SKIP_INDEXES;
 
@@ -230,7 +231,7 @@ var
 
     /** @name angular */
     angular           = window.angular || (window.angular = {}),
-    angularModule,
+    angularModule,//方法用于初始化module或者获取module
     uid               = 0;
 
 /**
@@ -280,6 +281,7 @@ function isArrayLike(obj) {
  * is the value of an object property or an array element, `key` is the object property key or
  * array element index and obj is the `obj` itself. Specifying a `context` for the function is optional.
  *
+ *值得注意的是
  * It is worth noting that `.forEach` does not iterate over inherited properties because it filters
  * using the `hasOwnProperty` method.
  *
@@ -324,11 +326,13 @@ function forEach(obj, iterator, context) {
     } else if (obj.forEach && obj.forEach !== forEach) {
         obj.forEach(iterator, context, obj);
     } else if (isBlankObject(obj)) {
+      //没有prototype的对象
       // createMap() fast path --- Safe to avoid hasOwnProperty check because prototype chain is empty
       for (key in obj) {
         iterator.call(context, obj[key], key, obj);
       }
     } else if (typeof obj.hasOwnProperty === 'function') {
+      //这是个慢方法
       // Slow path for objects inheriting Object.prototype, hasOwnProperty check needed
       for (key in obj) {
         if (obj.hasOwnProperty(key)) {
@@ -405,6 +409,7 @@ function baseExtend(dst, objs, deep) {
       var key = keys[j];
       var src = obj[key];
 
+      //如果深拷贝 且源对象是object类型
       if (deep && isObject(src)) {
         if (isDate(src)) {
           dst[key] = new Date(src.valueOf());
@@ -445,6 +450,9 @@ function baseExtend(dst, objs, deep) {
  * @param {Object} dst Destination object.
  * @param {...Object} src Source object(s).
  * @returns {Object} Reference to `dst`.
+ */
+ /*
+  跟merge的区别就在于是否是深拷贝
  */
 function extend(dst) {
   return baseExtend(dst, slice.call(arguments, 1), false);
@@ -539,6 +547,7 @@ identity.$inject = [];
 function valueFn(value) {return function valueRef() {return value;};}
 
 function hasCustomToString(obj) {
+  // line 228 var toString  = Object.prototype.toString,
   return isFunction(obj.toString) && obj.toString !== toString;
 }
 
@@ -598,6 +607,7 @@ function isObject(value) {
  * @returns {boolean} True if `value` is an `Object` with a null prototype
  */
 function isBlankObject(value) {
+  //var getPrototypeOf  = Object.getPrototypeOf,
   return value !== null && typeof value === 'object' && !getPrototypeOf(value);
 }
 
@@ -707,12 +717,12 @@ function isWindow(obj) {
   return obj && obj.window === obj;
 }
 
-
+//如果obj有$evalAsync 和$watch变量时那就是Scope
 function isScope(obj) {
   return obj && obj.$evalAsync && obj.$watch;
 }
 
-
+//调用toString函数
 function isFile(obj) {
   return toString.call(obj) === '[object File]';
 }
@@ -732,7 +742,7 @@ function isBoolean(value) {
   return typeof value === 'boolean';
 }
 
-
+//如果obj有then方法时
 function isPromiseLike(obj) {
   return obj && isFunction(obj.then);
 }
@@ -755,6 +765,9 @@ var trim = function(value) {
 // Copied from:
 // http://docs.closure-library.googlecode.com/git/local_closure_goog_string_string.js.source.html#line1021
 // Prereq: s is a string.
+//在string中的“特殊字符”前面插入转义字符(反斜线)后返回该字符串，这里的“特殊字符”是指那些在正则表达式中具有特殊意义的字符
+//http://www.kuqin.com/rubycndocument/man/built-in-class/class_object_regexp.html
+//http://stackoverflow.com/questions/2593637/how-to-escape-regular-expression-in-javascript
 var escapeForRegexp = function(s) {
   return s.replace(/([-()\[\]{}+?*.$\^|,:#<!\\])/g, '\\$1').
            replace(/\x08/g, '\\x08');
@@ -769,7 +782,7 @@ var escapeForRegexp = function(s) {
  *
  * @description
  * Determines if a reference is a DOM element (or wrapped jQuery element).
- *
+ *检测一个引用是否是Dom节点 或者是被包装的jQuery元素
  * @param {*} value Reference to check.
  * @returns {boolean} True if `value` is a DOM element (or wrapped jQuery element).
  */
@@ -800,6 +813,7 @@ function includes(array, obj) {
   return Array.prototype.indexOf.call(array, obj) != -1;
 }
 
+//返回移除的索引
 function arrayRemove(array, value) {
   var index = array.indexOf(value);
   if (index >= 0) {
@@ -879,6 +893,8 @@ function copy(source, destination) {
 
   if (destination) {
     if (isTypedArray(destination) || isArrayBuffer(destination)) {
+      //ngMinErr          = minErr('ng'),
+      //调用minErr方法 返回的函数
       throw ngMinErr('cpta', "Can't copy! TypedArray destination cannot be mutated.");
     }
     if (source === destination) {
@@ -887,7 +903,7 @@ function copy(source, destination) {
 
     // Empty the destination object
     if (isArray(destination)) {
-      destination.length = 0;
+      destination.length = 0;//如果destination是数组，长度就重置为0
     } else {
       forEach(destination, function(value, key) {
         if (key !== '$$hashKey') {
@@ -901,6 +917,7 @@ function copy(source, destination) {
     return copyRecurse(source, destination);
   }
 
+  //如果只有一个参数source 那么只要拷贝source的元素
   return copyElement(source);
 
   function copyRecurse(source, destination) {
@@ -911,6 +928,10 @@ function copy(source, destination) {
         destination.push(copyElement(source[i]));
       }
     } else if (isBlankObject(source)) {
+      // function createMap() {
+      //   /// 创建一个原型为null的空对象
+      //   return Object.create(null);
+      // }
       // createMap() fast path --- Safe to avoid hasOwnProperty check because prototype chain is empty
       for (key in source) {
         destination[key] = copyElement(source[key]);
@@ -934,6 +955,7 @@ function copy(source, destination) {
     return destination;
   }
 
+  //window 和scope不能拷贝
   function copyElement(source) {
     // Simple values
     if (!isObject(source)) {
@@ -941,6 +963,7 @@ function copy(source, destination) {
     }
 
     // Already copied values
+    //是否已经拷贝
     var index = stackSource.indexOf(source);
     if (index !== -1) {
       return stackDest[index];
@@ -952,8 +975,9 @@ function copy(source, destination) {
     }
 
     var needsRecurse = false;
-    var destination = copyType(source);
+    var destination = copyType(source);//source是对象或数组会返回undefined
 
+    //如果是对象或者数组那么需要再 递归拷贝
     if (destination === undefined) {
       destination = isArray(source) ? [] : Object.create(getPrototypeOf(source));
       needsRecurse = true;
@@ -967,6 +991,7 @@ function copy(source, destination) {
       : destination;
   }
 
+  //对象或数组会返回undefined
   function copyType(source) {
     switch (toString.call(source)) {
       case '[object Int8Array]':
@@ -1099,6 +1124,8 @@ function equals(o1, o2) {
       if (isScope(o1) || isScope(o2) || isWindow(o1) || isWindow(o2) ||
         isArray(o2) || isDate(o2) || isRegExp(o2)) return false;
       keySet = createMap();
+
+      //$ 和 function 忽略
       for (key in o1) {
         if (key.charAt(0) === '$' || isFunction(o1[key])) continue;
         if (!equals(o1[key], o2[key])) return false;
@@ -1116,6 +1143,8 @@ function equals(o1, o2) {
   return false;
 }
 
+//http://www.cnblogs.com/koleyang/p/5053965.html
+//处理CSP（上下文安全策略）的支持
 var csp = function() {
   if (!isDefined(csp.rules)) {
 
@@ -1195,6 +1224,7 @@ var jq = function() {
   var el;
   var i, ii = ngAttrPrefixes.length, prefix, name;
   for (i = 0; i < ii; ++i) {
+    //line 1513 var ngAttrPrefixes = ['ng-', 'data-ng-', 'ng:', 'x-ng-'];
     prefix = ngAttrPrefixes[i];
     if (el = window.document.querySelector('[' + prefix.replace(':', '\\:') + 'jq]')) {
       name = el.getAttribute(prefix + 'jq');
@@ -1245,7 +1275,7 @@ function bind(self, fn) {
       : function() {
           return arguments.length
             ? fn.apply(self, arguments)
-            : fn.call(self);
+            : fn.call(self);//包装一个函数
         };
   } else {
     // In IE, native methods are not functions so they cannot be bound (note: they don't need to be).
@@ -1253,7 +1283,7 @@ function bind(self, fn) {
   }
 }
 
-
+//json值替换
 function toJsonReplacer(key, value) {
   var val = value;
 
@@ -1328,6 +1358,9 @@ function toJson(obj, pretty) {
  * @param {string} json JSON string to deserialize.
  * @returns {Object|Array|string|number} Deserialized JSON string.
  */
+ /*
+ 内部调用JSON.parse方法
+ */
 function fromJson(json) {
   return isString(json)
       ? JSON.parse(json)
@@ -1335,7 +1368,9 @@ function fromJson(json) {
 }
 
 
+//时区
 var ALL_COLONS = /:/g;
+///jstimezonedetect  aka  also known as
 function timezoneToOffset(timezone, fallback) {
   // IE/Edge do not "understand" colon (`:`) in timezone
   timezone = timezone.replace(ALL_COLONS, '');
@@ -1350,9 +1385,11 @@ function addDateMinutes(date, minutes) {
   return date;
 }
 
-
+//https://www.npmjs.com/package/jstimezonedetect
 function convertTimezoneToLocal(date, timezone, reverse) {
   reverse = reverse ? -1 : 1;
+  //http://www.jb51.net/w3school/js/jsref_getTimezoneOffset.htm
+  //getTimezoneOffset() 方法可返回格林威治时间和本地时间之间的时差，以分钟为单位
   var dateTimezoneOffset = date.getTimezoneOffset();
   var timezoneOffset = timezoneToOffset(timezone, dateTimezoneOffset);
   return addDateMinutes(date, reverse * (timezoneOffset - dateTimezoneOffset));
@@ -1468,6 +1505,9 @@ function encodeUriSegment(val) {
 }
 
 
+/*
+  不必每个都编码
+*/
 /**
  * This method is intended for encoding *key* or *value* parts of query component. We need a custom
  * method because encodeURIComponent is too aggressive and encodes stuff that doesn't have to be
@@ -1731,8 +1771,9 @@ function bootstrap(element, modules, config) {
   };
   config = extend(defaultConfig, config);
   var doBootstrap = function() {
-    element = jqLite(element);
+    element = jqLite(element);//用jqLite包装了下
 
+    //判断injector方法调用的结果
     if (element.injector()) {
       var tag = (element[0] === window.document) ? 'document' : startingTag(element);
       // Encode angle brackets to prevent input from being sanitized to empty string #8683.
@@ -1742,8 +1783,13 @@ function bootstrap(element, modules, config) {
           tag.replace(/</,'&lt;').replace(/>/,'&gt;'));
     }
 
+    //传入的modules 比如html中定义的ng-app="myApp"
+    //那么为["myApp"]
+    //正常的话 这时 modules已经初始化
     modules = modules || [];
+    //unshift() 方法可向数组的开头添加一个或更多元素，并返回新的长度。
     modules.unshift(['$provide', function($provide) {
+      //调用$provide方法
       $provide.value('$rootElement', element);
     }]);
 
@@ -1755,13 +1801,17 @@ function bootstrap(element, modules, config) {
     }
 
     modules.unshift('ng');
-    console.log(modules); //['ng',['$provide', function($provide) {
-      //$provide.value('$rootElement', element);
-   // }],'Demo']
+    console.log("bootstrap");
+    ////通过createInjector方法会调用注入时提供的ng模块中的configFn
+    //configFn中提供了$rootScope, $rootElement, $compile, $injector
+    //通过$provide.provider方法提供
     var injector = createInjector(modules, config.strictDi);
+
+    //$rootScope,$rootElement,$compile,$injector都是在publishExternalAPI中
+     //注入ng模块时由$provide.provider提供的
     injector.invoke(['$rootScope', '$rootElement', '$compile', '$injector',
        function bootstrapApply(scope, element, compile, injector) {
-        scope.$apply(function() {
+        scope.$apply(function() { //rootScope
           element.data('$injector', injector);
           compile(element)(scope);
         });
@@ -1778,7 +1828,9 @@ function bootstrap(element, modules, config) {
     window.name = window.name.replace(NG_ENABLE_DEBUG_INFO, '');
   }
 
+  //测试不是  NG_DEFER_BOOTSTRAP 就执行doBootstrap()
   if (window && !NG_DEFER_BOOTSTRAP.test(window.name)) {
+    console.log("doBootstrap");
     return doBootstrap();
   }
 
@@ -1802,7 +1854,7 @@ function bootstrap(element, modules, config) {
  * @description
  * Use this function to reload the current application with debug information turned on.
  * This takes precedence over a call to `$compileProvider.debugInfoEnabled(false)`.
- *
+ *优先
  * See {@link ng.$compileProvider#debugInfoEnabled} for more.
  */
 function reloadWithDebugInfo() {
@@ -1842,9 +1894,9 @@ function bindJQuery() {
   if (bindJQueryFired) {
     return;
   }
-
+  //http://div.io/topic/1154
   // bind to jQuery if present;
-  var jqName = jq();
+  var jqName = jq(); // 调用jq方法
   jQuery = isUndefined(jqName) ? window.jQuery :   // use jQuery (if present)
            !jqName             ? undefined     :   // use jqLite
                                  window[jqName];   // use jQuery specified by `ngJq`
@@ -1897,6 +1949,8 @@ function assertArg(arg, name, reason) {
   return arg;
 }
 
+//接受数组的annotate
+//比如['$scope',function($scope){}]
 function assertArgFn(arg, name, acceptArrayAnnotation) {
   if (acceptArrayAnnotation && isArray(arg)) {
       arg = arg[arg.length - 1];
@@ -1921,7 +1975,7 @@ function assertNotHasOwnProperty(name, context) {
 /**
  * Return the value accessible from the object by path. Any undefined traversals are ignored
  * @param {Object} obj starting object
- * @param {String} path path to traverse
+ * @param {String} path path to traverse(穿越)
  * @param {boolean} [bindFnToScope=true]
  * @returns {Object} value as accessible by path
  */
@@ -1973,14 +2027,18 @@ function getBlockNodes(nodes) {
  * Creates a new object without a prototype. This object is useful for lookup without having to
  * guard against prototypically inherited properties via hasOwnProperty.
  *
- * Related micro-benchmarks:
+ * Related micro-benchmarks:(检测（用基准问题测试）)
  * - http://jsperf.com/object-create2
  * - http://jsperf.com/proto-map-lookup/2
  * - http://jsperf.com/for-in-vs-object-keys2
  *
  * @returns {Object}
  */
+ /*
+ https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/create
+ */
 function createMap() {
+  /// 创建一个原型为null的空对象
   return Object.create(null);
 }
 
@@ -2014,6 +2072,7 @@ function setupModuleLoader(window) {
   // We need to expose `angular.$$minErr` to modules such as `ngResource` that reference it during bootstrap
   angular.$$minErr = angular.$$minErr || minErr;
 
+  //此处定义了angular.module方法
   return ensure(angular, 'module', function() {
     /** @type {Object.<string, angular.Module>} */
     var modules = {};
@@ -2040,6 +2099,8 @@ function setupModuleLoader(window) {
      *
      * ```js
      * // Create a new module
+     //setupModuleLoader 的时候已经返回了或者说定义了angular.module方法
+     //angular.module返回 modules['myModule']对象  就是个moduleInstance
      * var myModule = angular.module('myModule', []);
      *
      * // register a new service
@@ -2055,6 +2116,8 @@ function setupModuleLoader(window) {
      * Then you can create an injector and load your modules like this:
      *
      * ```js
+      //就是调的createInjector方法
+      //在publishExternalAPI 中定义
      * var injector = angular.injector(['ng', 'myModule'])
      * ```
      *
@@ -2068,6 +2131,9 @@ function setupModuleLoader(window) {
      * @param {Function=} configFn Optional configuration function for the module. Same as
      *        {@link angular.Module#config Module#config()}.
      * @returns {angular.Module} new module with the {@link angular.Module} api.
+     */
+     /*
+      requires参数是必须的，所以angular.module("",[])第二个参数即使为空数组也要提供。
      */
     return function module(name, requires, configFn) {
       var assertNotHasOwnProperty = function(name, context) {
@@ -2096,6 +2162,20 @@ function setupModuleLoader(window) {
         /** @type {!Array.<Function>} */
         var runBlocks = [];
 
+        /*
+         function invokeLater(provider, method, insertMethod, queue) {
+          if (!queue) queue = invokeQueue;
+          return function() {
+            queue[insertMethod || 'push']([provider, method, arguments]);
+            return moduleInstance;
+          };
+        }
+          返回一个方法 
+          方法内部调用configBlocks['push'](['$injector','invoke',arguments])
+          然后返回moduleInstance
+
+          config就是一个返回moduleInstance的函数
+        */
         var config = invokeLater('$injector', 'invoke', 'push', configBlocks);
 
         /** @type {angular.Module} */
@@ -2113,6 +2193,8 @@ function setupModuleLoader(window) {
            * @description
            * Holds the list of modules which the injector will load before the current module is
            * loaded.
+           *必须传[]或者 模块数组
+           * 会在loadModules的时候先加载requires 
            */
           requires: requires,
 
@@ -2315,6 +2397,9 @@ function setupModuleLoader(window) {
           }
         };
 
+        //configFn有可能就是['$provide',function($provide){}]
+        //config 就是调用configBlocks[insertMethod || 'push']([provider, method, arguments]);
+        //这里的arguments就是configFn 
         if (configFn) {
           config(configFn);
         }
@@ -2340,10 +2425,15 @@ function setupModuleLoader(window) {
          * @param {string} method
          * @returns {angular.Module}
          */
+         /*
+           只放入invokeQueue中
+           返回moduleInstance供继续调用
+         */
         function invokeLaterAndSetModuleName(provider, method) {
           return function(recipeName, factoryFunction) {
             if (factoryFunction && isFunction(factoryFunction)) factoryFunction.$$moduleName = name;
             invokeQueue.push([provider, method, arguments]);
+            //比如service 就是 provider= $provide  method = service
             return moduleInstance;
           };
         }
@@ -2359,6 +2449,9 @@ function setupModuleLoader(window) {
  * Creates a shallow copy of an object, an array or a primitive.
  *
  * Assumes that there are no proto properties for objects.
+ */
+ /*
+  浅拷贝
  */
 function shallowCopy(src, dst) {
   if (isArray(src)) {
@@ -2526,9 +2619,11 @@ var version = {
   major: 1,    // package task
   minor: 5,
   dot: 8,
-  codeName: 'arbitrary-fallbacks'
+  codeName: 'arbitrary-fallbacks'//任意回退
 };
 
+
+//相当于扩展了angular对象，然后定义了angular.module方法
 
 function publishExternalAPI(angular) {
   extend(angular, {
@@ -2564,15 +2659,27 @@ function publishExternalAPI(angular) {
     'reloadWithDebugInfo': reloadWithDebugInfo
   });
 
+  //返回angular.module方法
+  //传递(name, requires, configFn)
   angularModule = setupModuleLoader(window);
 
+  //调用angular.module方法
+  //angular.module = function(name, requires, configFn)
+  //angular.module维护了一个 modules变量
+  //ng name参数
+  //['ngLocale'] 是 requires参数
+  //['$provide',function(){}] 是 configFn参数
+  //ngLocale 模块在源码最后定义
+
+  //loadModules方法中调用runInvokeQueue 先抽取从providerCache里抽取$provide
   angularModule('ng', ['ngLocale'], ['$provide',
     function ngModule($provide) {
       // $$sanitizeUriProvider needs to be before $compileProvider as it is used by it.
       $provide.provider({
         $$sanitizeUri: $$SanitizeUriProvider
       });
-      //实例化CompileProvider 返回provider本身供链式调用directive
+      //用 injector.invoke时候放入providerCache
+      //directive方法调用 forEach(name, reverseParams(registerDirective));
       $provide.provider('$compile', $CompileProvider).
         directive({
             a: htmlAnchorDirective,
@@ -2823,6 +2930,7 @@ var jqLiteMinErr = minErr('jqLite');
  * Converts snake_case to camelCase.
  * Also there is special case for Moz prefix starting with upper case letter.
  * @param name Name to normalize
+ *骆驼 https://my.oschina.net/yongqing/blog/300313
  */
 function camelCase(name) {
   return name.
@@ -2832,7 +2940,15 @@ function camelCase(name) {
     replace(MOZ_HACK_REGEXP, 'Moz$1');
 }
 
+//* 匹配前面的子表达式任意次。例如，zo*能匹配“z”，也能匹配“zo”以及“zoo”。
+//\s 匹配任何不可见字符，包括空格、制表符、换页符等等
+
+//(?:pattern) 非获取匹配，匹配pattern但不获取匹配结果，不进行存储供以后使用。这在使用或字符“(|)”来组合一个模式的各个部分时很有用。例如“industr(?:y|ies)”就是一个比“industry|industries”更简略的表达式。
 var SINGLE_TAG_REGEXP = /^<([\w-]+)\s*\/?>(?:<\/\1>|)$/;
+//+  匹配前面的子表达式一次或多次(大于等于1次）
+//\w 匹配包括下划线的任何单词字符。类似但不等价于“[A-Za-z0-9_]”，这里的"单词"字符使用Unicode字符集。
+//&ss; &#ss;  都属于html
+//http://www.cnblogs.com/web2-developer/archive/2015/11/09/angular-5.html
 var HTML_REGEXP = /<|&#?\w+;/;
 var TAG_NAME_REGEXP = /<([\w:-]+)/;
 var XHTML_TAG_REGEXP = /<(?!area|br|col|embed|hr|img|input|link|meta|param)(([\w:-]+)[^>]*)\/>/gi;
@@ -2856,6 +2972,7 @@ function jqLiteIsTextNode(html) {
   return !HTML_REGEXP.test(html);
 }
 
+//判断节点元素是否可以接受数据
 function jqLiteAcceptsData(node) {
   // The window object can accept data but has no nodeType
   // Otherwise we are only interested in elements (1) and documents (9)
@@ -2928,8 +3045,11 @@ function jqLiteParseHTML(html, context) {
   return [];
 }
 
+//如果有父节点，那么就替换子节点
+//否则就追加子节点
 function jqLiteWrapNode(node, wrapper) {
   var parent = node.parentNode;
+
 
   if (parent) {
     parent.replaceChild(wrapper, node);
@@ -2958,8 +3078,7 @@ function JQLite(element) {
     element = trim(element);
     argIsString = true;
   }
-
-  //this 有可能指向window
+  //this 有可能就是window
   if (!(this instanceof JQLite)) {
     if (argIsString && element.charAt(0) != '<') {
       throw jqLiteMinErr('nosel', 'Looking up elements via selectors is not supported by jqLite! See: http://docs.angularjs.org/api/angular.element');
@@ -3122,7 +3241,7 @@ function jqLiteAddClass(element, cssClasses) {
   }
 }
 
-//elements放数组里
+
 function jqLiteAddNodes(root, elements) {
   // THIS CODE IS VERY HOT. Don't make changes without benchmarking.
 
@@ -3262,12 +3381,12 @@ var ALIASED_ATTR = {
 };
 
 function getBooleanAttrName(element, name) {
-  
   // check dom last since we will most likely fail on name
   var booleanAttr = BOOLEAN_ATTR[name.toLowerCase()];
 
-  //首先判断booleanAttr 来减少Dom访问
   // booleanAttr is here twice to minimize DOM access
+  //返回booleanAttr 
+
   return booleanAttr && BOOLEAN_ELEMENTS[nodeName_(element)] && booleanAttr;
 }
 
@@ -3909,11 +4028,11 @@ var $$HashMapProvider = [function() {
  * @name auto
  * @installation
  * @description
- *
+ * 隐式模块
  * Implicit module which gets automatically added to each {@link auto.$injector $injector}.
  */
 
-var ARROW_ARG = /^([^\(]+?)=>/;
+var ARROW_ARG = /^([^\(]+?)=>/; //箭头函数
 var FN_ARGS = /^[^\(]*\(\s*([^\)]*)\)/m;
 var FN_ARG_SPLIT = /,/;
 var FN_ARG = /^\s*(_?)(\S+?)\1\s*$/;
@@ -3928,6 +4047,7 @@ function stringifyFn(fn) {
   return Function.prototype.toString.call(fn) + ' ';
 }
 
+//把函数的参数提取出来
 function extractArgs(fn) {
   var fnText = stringifyFn(fn).replace(STRIP_COMMENTS, ''),
       args = fnText.match(ARROW_ARG) || fnText.match(FN_ARGS);
@@ -3935,6 +4055,7 @@ function extractArgs(fn) {
 }
 
 function anonFn(fn) {
+  //对于匿名函数而言，显示最少的方法签名对于调试是有帮助的
   // For anonymous functions, showing at the very least the function signature can help in
   // debugging.
   var args = extractArgs(fn);
@@ -3957,21 +4078,25 @@ function annotate(fn, strictDi, name) {
           if (!isString(name) || !name) {
             name = fn.name || anonFn(fn);
           }
+          //判断fn的length
+          //explicit 明确的注解
+          //injector 模块   strictdi code
           throw $injectorMinErr('strictdi',
             '{0} is not using explicit annotation and cannot be invoked in strict mode', name);
         }
-        argDecl = extractArgs(fn);//解析函数参数
+        argDecl = extractArgs(fn);
+        //FN_ARG_SPLIT  ,
         forEach(argDecl[1].split(FN_ARG_SPLIT), function(arg) {
           arg.replace(FN_ARG, function(all, underscore, name) {
-            $inject.push(name);
+            $inject.push(name);//把_ 去除
           });
         });
       }
       fn.$inject = $inject;
     }
-  } else if (isArray(fn)) {
+  } else if (isArray(fn)) { //比如['$scope',function($scope){}]
     last = fn.length - 1;
-    assertArgFn(fn[last], 'fn');//判断是否是函数
+    assertArgFn(fn[last], 'fn');//判断参数fn是否是个函数
     $inject = fn.slice(0, last);
   } else {
     assertArgFn(fn, 'fn', true);
@@ -4492,12 +4617,12 @@ function annotate(fn, strictDi, name) {
  *     return $delegate;
  *   }]);
  * ```
- */
+ *///http://blog.csdn.net/wz172637815/article/details/50595718
 
-
+//http://www.mamicode.com/info-detail-247448.html
 function createInjector(modulesToLoad, strictDi) {
   strictDi = (strictDi === true);
-  var INSTANTIATING = {},
+  var INSTANTIATING = {},//instantiating
       providerSuffix = 'Provider',
       path = [],
       loadedModules = new HashMap([], true),
@@ -4511,6 +4636,19 @@ function createInjector(modulesToLoad, strictDi) {
             decorator: decorator
           }
       },
+
+      //createInternalInjector 返回
+      //return {
+    //   invoke: invoke,
+    //   instantiate: instantiate,
+    //   get: getService,
+    //   annotate: createInjector.$$annotate,
+    //   has: function(name) {
+    //     return providerCache.hasOwnProperty(name + providerSuffix) || cache.hasOwnProperty(name);
+    //   }
+    // };
+
+      //createInternalInjector(cache,factory)
       providerInjector = (providerCache.$injector =
           createInternalInjector(providerCache, function(serviceName, caller) {
             if (angular.isString(caller)) {
@@ -4521,16 +4659,34 @@ function createInjector(modulesToLoad, strictDi) {
       instanceCache = {},
       protoInstanceInjector =
           createInternalInjector(instanceCache, function(serviceName, caller) {
+
+            //去providerCache里去找
             var provider = providerInjector.get(serviceName + providerSuffix, caller);
             return instanceInjector.invoke(
                 provider.$get, provider, undefined, serviceName);
+            //$get 就返回下面的valueFn
           }),
       instanceInjector = protoInstanceInjector;
 
+  //为了下面的protoInstanceInjector.get里的调用
+
+  //$get 返回一个 返回protoInstanceInjector的函数
+  //function valueFn(value) {return function valueRef() {return value;};}
   providerCache['$injector' + providerSuffix] = { $get: valueFn(protoInstanceInjector) };
   var runBlocks = loadModules(modulesToLoad);
-  instanceInjector = protoInstanceInjector.get('$injector');
+  
+  //调用providerInjector.get
+  
+  //调用的时候 instanceInjector还是protoInstanceInjector
+  //而且instanceCache里还没有任何属性
+
+  //去ProviderInjector的 providerCache里去找
+
+  //invoke $get就是返回  protorInstanceInjector
+
+  instanceInjector = protoInstanceInjector.get('$injector');//上面定义的providerCache.$jnjector
   instanceInjector.strictDi = strictDi;
+  //if(fn) 因为有的方法invoke没有返回值
   forEach(runBlocks, function(fn) { if (fn) instanceInjector.invoke(fn); });
 
   return instanceInjector;
@@ -4538,14 +4694,11 @@ function createInjector(modulesToLoad, strictDi) {
   ////////////////////////////////////
   // $provider
   ////////////////////////////////////
-
+  //支持对象调用
   function supportObject(delegate) {
     return function(key, value) {
       if (isObject(key)) {
-        forEach(key, reverseParams(delegate));//foreach是 value key 所以要倒转参数
-    //     $provide.provider({
-    //        $$anchorScroll: $$AnchorScrollProvider
-    //      });
+        forEach(key, reverseParams(delegate));// function(value, key) {iteratorFn(key, value);};
       } else {
         return delegate(key, value);
       }
@@ -4557,12 +4710,14 @@ function createInjector(modulesToLoad, strictDi) {
     if (isFunction(provider_) || isArray(provider_)) {
       provider_ = providerInjector.instantiate(provider_);
     }
+    //没有定义$get函数会报错
     if (!provider_.$get) {
       throw $injectorMinErr('pget', "Provider '{0}' must define $get factory method.", name);
     }
     return providerCache[name + providerSuffix] = provider_;
   }
 
+//返回一个方法而已
   function enforceReturnValue(name, factory) {
     return function enforcedReturnValue() {
       var result = instanceInjector.invoke(factory, this);
@@ -4584,7 +4739,7 @@ function createInjector(modulesToLoad, strictDi) {
       return $injector.instantiate(constructor);
     }]);
   }
-
+  //用个valueFn包装下
   function value(name, val) { return factory(name, valueFn(val), false); }
 
   function constant(name, value) {
@@ -4609,31 +4764,43 @@ function createInjector(modulesToLoad, strictDi) {
   function loadModules(modulesToLoad) {
     assertArg(isUndefined(modulesToLoad) || isArray(modulesToLoad), 'modulesToLoad', 'not an array');
     var runBlocks = [], moduleFn;
+    //遍历modulesToLoad数组
     forEach(modulesToLoad, function(module) {
       if (loadedModules.get(module)) return;
       loadedModules.put(module, true);
 
+      //调用invokdeQueue
       function runInvokeQueue(queue) {
         var i, ii;
         for (i = 0, ii = queue.length; i < ii; i++) {
           var invokeArgs = queue[i],
-              //  //providerInjector 去providerCache里去找
+              //获取provider
               provider = providerInjector.get(invokeArgs[0]);
-
-            //console.log(invokeArgs[0]); -- $injector  $controllerProvider
+              //getService 通过providerCache寻找
+                 //console.log(invokeArgs[0]); -- $injector  $controllerProvider
           //console.log('invokeArgs[2][0]:'+invokeArgs[2][0]);
           //console.log(invokeArgs[1]);  -- invoke
-
-
+          //调用provider中的方法
           provider[invokeArgs[1]].apply(provider, invokeArgs[2]);
+
+    //      function(key, value) {
+    //          if (isObject(key)) {
+    //            forEach(key, reverseParams(delegate));
+    //          } else {
+    //            return delegate(key, value);
+    //          }
+    // }
         }
       }
 
       try {
         if (isString(module)) {
+          //获取module
           moduleFn = angularModule(module);
+          //moduleFn.requires 比如['ngLocale']
           runBlocks = runBlocks.concat(loadModules(moduleFn.requires)).concat(moduleFn._runBlocks);
           runInvokeQueue(moduleFn._invokeQueue);
+          //像module.service时加入的service ，那么需要把这些service加入prividerCache
           runInvokeQueue(moduleFn._configBlocks);
         } else if (isFunction(module)) {
             runBlocks.push(providerInjector.invoke(module));
@@ -4663,11 +4830,15 @@ function createInjector(modulesToLoad, strictDi) {
 
   ////////////////////////////////////
   // internal Injector
+  // 创建内部注入器
   ////////////////////////////////////
 
   function createInternalInjector(cache, factory) {
 
+    //没有cache里的serviceName的时候 ，再调用factory方法。
     function getService(serviceName, caller) {
+      //http://blog.csdn.net/webdesman/article/details/20040815
+    //对象是否有自己的属性 不在原型链上扩展的
       if (cache.hasOwnProperty(serviceName)) {
         if (cache[serviceName] === INSTANTIATING) {
           throw $injectorMinErr('cdep', 'Circular dependency found: {0}',
@@ -4676,8 +4847,11 @@ function createInjector(modulesToLoad, strictDi) {
         return cache[serviceName];
       } else {
         try {
+          //unshift() 方法可向数组的开头添加一个或更多元素，并返回新的长度。
           path.unshift(serviceName);
           cache[serviceName] = INSTANTIATING;
+          //如果没有属性 那就调用factory函数 传入serviceName和caller
+          //caller也是函数
           return cache[serviceName] = factory(serviceName, caller);
         } catch (err) {
           if (cache[serviceName] === INSTANTIATING) {
@@ -4685,6 +4859,7 @@ function createInjector(modulesToLoad, strictDi) {
           }
           throw err;
         } finally {
+            //shift() 方法用于把数组的第一个元素从其中删除，并返回第一个元素的值
           path.shift();
         }
       }
@@ -4693,6 +4868,9 @@ function createInjector(modulesToLoad, strictDi) {
 
     function injectionArgs(fn, locals, serviceName) {
       var args = [],
+          //$$annotate就是外面的annotate函数
+          //line 3966
+          //函数参数列表
           $inject = createInjector.$$annotate(fn, strictDi, serviceName);
 
       for (var i = 0, length = $inject.length; i < length; i++) {
@@ -4701,7 +4879,7 @@ function createInjector(modulesToLoad, strictDi) {
           throw $injectorMinErr('itkn',
                   'Incorrect injection token! Expected service name as string, got {0}', key);
         }
-         console.log("key:"+key);
+        console.log("key:"+key);
         args.push(locals && locals.hasOwnProperty(key) ? locals[key] :
                                                          getService(key, serviceName));
       }
@@ -4725,17 +4903,17 @@ function createInjector(modulesToLoad, strictDi) {
         locals = null;
       }
 
+      //注入参数
       var args = injectionArgs(fn, locals, serviceName);
-      if (isArray(fn)) {
-        fn = fn[fn.length - 1];
+      if (isArray(fn)) { //比如['$scope',function($scope){}]
+        fn = fn[fn.length - 1];//取数组的最后一个
       }
 
       if (!isClass(fn)) {
         // http://jsperf.com/angularjs-invoke-apply-vs-switch
         // #5388
-        if(self == undefined){
-          console.log(args);
-        }
+        //比如 var injector = angular.injector(["myModule"]);
+        //injector.invoke(function(myService){alert(myService.my);});
         return fn.apply(self, args);
       } else {
         args.unshift(null);
@@ -4743,8 +4921,7 @@ function createInjector(modulesToLoad, strictDi) {
       }
     }
 
-    //$provide.Provider的时候会实例化provider
-    //比如CompileProvider
+
     function instantiate(Type, locals, serviceName) {
       // Check if Type is annotated and use just the given function at n-1 as parameter
       // e.g. someModule.factory('greeter', ['$window', function(renamed$window) {}]);
@@ -4948,6 +5125,13 @@ function $AnchorScrollProvider() {
     //  and working in all supported browsers.)
     function getFirstAnchor(list) {
       var result = null;
+      //some() 方法用于检测数组中的元素是否满足指定条件（函数提供）。
+
+      //some() 方法会依次执行数组的每个元素：
+
+      //如果有一个元素满足条件，则表达式返回true , 剩余的元素不会再执行检测。
+      //如果没有满足条件的元素，则返回false。
+
       Array.prototype.some.call(list, function(element) {
         if (nodeName_(element) === 'a') {
           result = element;
@@ -5068,9 +5252,11 @@ function splitClasses(classes) {
     classes = classes.split(' ');
   }
 
-  // Use createMap() to prevent class assumptions involving property names in
+  // Use createMap() to prevent class assumptions（假设） involving（参与） property names in
   // Object.prototype
+  //通过调用createMap方法 阻止类名继承Object.prototype中的属性名
   var obj = createMap();
+  //Object.create(null) 
   forEach(classes, function(klass) {
     // sometimes the split leaves empty string values
     // incase extra spaces were applied to the options
@@ -7646,6 +7832,7 @@ function $TemplateCacheProvider() {
  * {@link guide/compiler Angular HTML Compiler} section of the Developer Guide.
  */
 
+//定义compileMinErr方法
 var $compileMinErr = minErr('$compile');
 
 function UNINITIALIZED_VALUE() {}
@@ -7657,20 +7844,31 @@ var _UNINITIALIZED_VALUE = new UNINITIALIZED_VALUE();
  *
  * @description
  */
+ /*
+ 为了在injectionArgs方法中 annotate中返回 然后给injectionArgs 使用
+ 在bootstrap -> createInjector的时候加载ng模块的时候调用
+ $provide.provider后初始化CompileProvider
+ */
 $CompileProvider.$inject = ['$provide', '$$sanitizeUriProvider'];
 function $CompileProvider($provide, $$sanitizeUriProvider) {
   var hasDirectives = {},
       Suffix = 'Directive',
       COMMENT_DIRECTIVE_REGEXP = /^\s*directive\:\s*([\w\-]+)\s+(.*)$/,
+      //匹配前面的子表达式零次或一次。例如，“do(es)?”可以匹配“do”或“does”中的“do”。?等价于{0,1}。
+      //span class="my-dir: exp;"></span>
       CLASS_DIRECTIVE_REGEXP = /(([\w\-]+)(?:\:([^;]+))?;?)/,
       ALL_OR_NOTHING_ATTRS = makeMap('ngSrc,ngSrcset,src,srcset'),
       REQUIRE_PREFIX_REGEXP = /^(?:(\^\^?)?(\?)?(\^\^?)?)?/;
 
   // Ref: http://developers.whatwg.org/webappapis.html#event-handler-idl-attributes
-  // The assumption is that future DOM event attribute names will begin with
-  // 'on' and be composed of only English letters.
+  // The assumption(假设) is that future DOM event attribute names will begin with
+  // 'on' and be composed of（由..组成） only English letters.
   var EVENT_HANDLER_ATTR_REGEXP = /^(on[a-z]+|formaction)$/;
+
+  //创建个空对象
   var bindingCache = createMap();
+
+  //scope属性
 
   function parseIsolateBindings(scope, directiveName, isController) {
     var LOCAL_REGEXP = /^\s*([@&<]|=(\*?))(\??)\s*(\w*)\s*$/;
@@ -7712,20 +7910,38 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       isolateScope: null,
       bindToController: null
     };
+
+    //directive中 scope是个对象
+    //比如 
+        // return {
+        //     scope: {resource: '=',invoice:'='},
+        //     restrict: 'E',
+        //     link: link,
+        //     templateUrl: "scripts/directives/billDetail/billDetail.html"
+        //   }
+    //如果scope属性是对象
+    //那scope里的属性必须符合正则规则
     if (isObject(directive.scope)) {
+      //如果bindToController 为true的 话 那是绑定到bindToController属性的
       if (directive.bindToController === true) {
         bindings.bindToController = parseIsolateBindings(directive.scope,
                                                          directiveName, true);
         bindings.isolateScope = {};
       } else {
+        //相当于新创建个对象 用于隔离作用域
         bindings.isolateScope = parseIsolateBindings(directive.scope,
                                                      directiveName, false);
       }
     }
+
+    //https://stackoverflow.com/questions/31861783/angularjs-1-4-directives-scope-two-way-binding-and-bindtocontroller
+    //https://toddmotto.com/no-scope-soup-bind-to-controller-angularjs/
     if (isObject(directive.bindToController)) {
       bindings.bindToController =
           parseIsolateBindings(directive.bindToController, directiveName, true);
     }
+
+    //如果bindToController是对象的话 那需要判断controller 和controllerAs
     if (isObject(bindings.bindToController)) {
       var controller = directive.controller;
       var controllerAs = directive.controllerAs;
@@ -7744,6 +7960,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
     return bindings;
   }
 
+  //不允许有 空格
+  //首字母得小写
   function assertValidDirectiveName(name) {
     var letter = name.charAt(0);
     if (!letter || letter !== lowercase(letter)) {
@@ -7777,6 +7995,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
    *
    * @description
    * Register a new directive with the compiler.
+   * 通过compiler注册一个新的指令 
    *
    * @param {string|Object} name Name of the directive in camel-case (i.e. <code>ngBind</code> which
    *    will match as <code>ng-bind</code>), or an object map of directives where the keys are the
@@ -7784,15 +8003,18 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
    * @param {Function|Array} directiveFactory An injectable directive factory function. See the
    *    {@link guide/directive directive guide} and the {@link $compile compile API} for more info.
    * @returns {ng.$compileProvider} Self for chaining.
+   *返回自己供链式调用
    */
   this.directive = function registerDirective(name, directiveFactory) {
     assertNotHasOwnProperty(name, 'directive');
-    //如果参数name是string的话
     if (isString(name)) {
       assertValidDirectiveName(name);
       assertArg(directiveFactory, 'directiveFactory');
       if (!hasDirectives.hasOwnProperty(name)) {
         hasDirectives[name] = [];
+        //Suffix =  Directive
+
+        //$provide.factory就是调用provider 提供个privder
         $provide.factory(name + Suffix, ['$injector', '$exceptionHandler',
           function($injector, $exceptionHandler) {
             var directives = [];
@@ -7820,6 +8042,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       }
       hasDirectives[name].push(directiveFactory);
     } else {
+      //遍历指令数组
       forEach(name, reverseParams(registerDirective));
     }
     return this;
@@ -8048,7 +8271,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
    *
    * The default value is true.
    */
-  var debugInfoEnabled = true;//默认为true
+  var debugInfoEnabled = true;
   this.debugInfoEnabled = function(enabled) {
     if (isDefined(enabled)) {
       debugInfoEnabled = enabled;
@@ -8101,9 +8324,11 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
     var onChangesTtl = TTL;
     // The onChanges hooks should all be run together in a single digest
     // When changes occur, the call to trigger their hooks will be added to this queue
+    //触发钩子的调用会被加到这个Queue中。
     var onChangesQueue;
 
     // This function is called in a $$postDigest to trigger all the onChanges hooks in a single digest
+    //postDigest 中调用flushOnChangesQueue
     function flushOnChangesQueue() {
       try {
         if (!(--onChangesTtl)) {
@@ -8430,7 +8655,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
     compile.$$createComment = function(directiveName, comment) {
       var content = '';
-      if (debugInfoEnabled) {//默认为true
+      if (debugInfoEnabled) {
         content = ' ' + (directiveName || '') + ': ';
         if (comment) content += comment + ' ';
       }
@@ -8444,9 +8669,10 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
     function compile($compileNodes, transcludeFn, maxPriority, ignoreDirective,
                         previousCompileContext) {
       if (!($compileNodes instanceof jqLite)) {
-        // jquery always rewraps, whereas we need to preserve the original selector so that we can
+        // jquery always rewraps, whereas(然而) we need to preserve(保持) the original selector so that we can
         // modify it.
         $compileNodes = jqLite($compileNodes);
+        //jqLite对象里包含了node
       }
 
       var NOT_EMPTY = /\S+/;
@@ -8455,7 +8681,10 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       // not be able to attach scope data to them, so we will wrap them in <span>
       for (var i = 0, len = $compileNodes.length; i < len; i++) {
         var domNode = $compileNodes[i];
-
+        
+        //NODE_TYPE_TEXT == 3 代表元素或属性中的文本内容
+        // 对于文本节点，使用<span>包装
+        //并且值不为空的
         if (domNode.nodeType === NODE_TYPE_TEXT && domNode.nodeValue.match(NOT_EMPTY) /* non-empty */) {
           jqLiteWrapNode(domNode, $compileNodes[i] = window.document.createElement('span'));
         }
@@ -8464,14 +8693,18 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       var compositeLinkFn =
               compileNodes($compileNodes, transcludeFn, $compileNodes,
                            maxPriority, ignoreDirective, previousCompileContext);
+      //添加 scope样式
       compile.$$addScopeClass($compileNodes);
       var namespace = null;
+      //publicLinkFn(scope)：传入$rootScope，执行publicLinkFn，完成整个页面的链接工作
       return function publicLinkFn(scope, cloneConnectFn, options) {
         assertArg(scope, 'scope');
 
+          //貌似跟嵌入有关系
+          //嵌入那有个lazyCompliation
         if (previousCompileContext && previousCompileContext.needsNewScope) {
           // A parent directive did a replace and a directive on this element asked
-          // for transclusion, which caused us to lose a layer of element on which
+          // for transclusion(嵌入), which caused us to lose a layer of element on which
           // we could hold the new transclusion scope, so we will create it manually
           // here.
           scope = scope.$parent.$new();
@@ -8494,6 +8727,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           namespace = detectNamespaceForChildElements(futureParentElement);
         }
         var $linkNode;
+        //初始化namespace是html
         if (namespace !== 'html') {
           // When using a directive with replace:true and templateUrl the $compileNodes
           // (or a child element inside of them)
@@ -8506,6 +8740,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         } else if (cloneConnectFn) {
           // important!!: we must call our jqLite.clone() since the jQuery one is trying to be smart
           // and sometimes changes the structure of the DOM.
+          //jqLiteClone
+          //JQLitePrototype 等于 JQLite.prototype
           $linkNode = JQLitePrototype.clone.call($compileNodes);
         } else {
           $linkNode = $compileNodes;
@@ -8520,6 +8756,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         compile.$$addScopeInfo($linkNode, scope);
 
         if (cloneConnectFn) cloneConnectFn($linkNode, scope);
+
+        //执行LinkFn
         if (compositeLinkFn) compositeLinkFn(scope, $linkNode, $linkNode, parentBoundTranscludeFn);
         return $linkNode;
       };
@@ -8540,6 +8778,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
      * for a particular node are collected their compile functions are executed. The compile
      * functions return values - the linking functions - are combined into a composite linking
      * function, which is the a linking function for the node.
+     * linking function 被合并进composite linking function
      *
      * @param {NodeList} nodeList an array of nodes or NodeList to compile
      * @param {function(angular.Scope, cloneAttachFn=)} transcludeFn A linking function, where the
@@ -8550,6 +8789,9 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
      * @param {number=} maxPriority Max directive priority.
      * @returns {Function} A composite linking function of all of the matched directives or null.
      */
+     /*
+       匹配nodeList的每个节点
+     */
     function compileNodes(nodeList, transcludeFn, $rootElement, maxPriority, ignoreDirective,
                             previousCompileContext) {
       var linkFns = [],
@@ -8557,11 +8799,15 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
       for (var i = 0; i < nodeList.length; i++) {
         attrs = new Attributes();
+        //实例化的时候就把attrs.$attr 实例化了
 
+        //收集指令
         // we must always refer to nodeList[i] since the nodes can be replaced underneath us.
         directives = collectDirectives(nodeList[i], [], attrs, i === 0 ? maxPriority : undefined,
                                         ignoreDirective);
 
+        // 应用指令，返回链接函数
+        //$rootElement为 nodeList
         nodeLinkFn = (directives.length)
             ? applyDirectivesToNode(directives, nodeList[i], attrs, transcludeFn, $rootElement,
                                       null, [], [], previousCompileContext)
@@ -8571,6 +8817,9 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           compile.$$addScopeClass(attrs.$$element);
         }
 
+          //编译子节点
+          //nodeList[i].childNodes 包含节点之间的文本
+          //返回的LinkFn也就是compoisteLinkFn
         childLinkFn = (nodeLinkFn && nodeLinkFn.terminal ||
                       !(childNodes = nodeList[i].childNodes) ||
                       !childNodes.length)
@@ -8581,8 +8830,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
                      && nodeLinkFn.transclude) : transcludeFn);
 
         if (nodeLinkFn || childLinkFn) {
-          linkFns.push(i, nodeLinkFn, childLinkFn);
-          linkFnFound = true;
+          linkFns.push(i, nodeLinkFn, childLinkFn); //放入linkFn数组
+          linkFnFound = true;//返回compositeLinkFn
           nodeLinkFnFound = nodeLinkFnFound || nodeLinkFn;
         }
 
@@ -8590,6 +8839,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         previousCompileContext = null;
       }
 
+      //如果找到任何东西就返回compositeLinkFn函数 
+      //否则就返回null
       // return a linking function if we have found anything, null otherwise
       return linkFnFound ? compositeLinkFn : null;
 
@@ -8627,6 +8878,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
             }
 
             if (nodeLinkFn.transcludeOnThisElement) {
+
+              //返回 boundTranscludeFn 方法
               childBoundTranscludeFn = createBoundTranscludeFn(
                   scope, nodeLinkFn.transclude, parentBoundTranscludeFn);
 
@@ -8639,7 +8892,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
             } else {
               childBoundTranscludeFn = null;
             }
-
+            //nodeLinkFn里调用childLinkFn
             nodeLinkFn(childLinkFn, childScope, node, $rootElement, childBoundTranscludeFn);
 
           } else if (childLinkFn) {
@@ -8649,6 +8902,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       }
     }
 
+    //transcludeFn 有可能是directive的transclude方法
     function createBoundTranscludeFn(scope, transcludeFn, previousBoundTranscludeFn) {
       function boundTranscludeFn(transcludedScope, cloneFn, controllers, futureParentElement, containingScope) {
 
@@ -8681,7 +8935,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
     /**
      * Looks for directives on the given node and adds them to the directive collection which is
      * sorted.
-     *
+     *收集指令
      * @param node Node to search.
      * @param directives An array to which the directives are added to. This array is sorted before
      *        the function returns.
@@ -8695,65 +8949,87 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           className;
 
       switch (nodeType) {
-        case NODE_TYPE_ELEMENT: /* Element */
+        // 1.element node：先根据tagName使用addDirective来添加指令，
+        // 然后遍历节点的attrs使用addAttrInterpolateDirective和addDirective来添加指令，
+        // 最后通过className使用addDirective来添加指令
+        case NODE_TYPE_ELEMENT: /* Element 元素类型*/
           // use the node name: <directive>
+          //nodeName_ 获取node名称 比如div
+          // addDirective 中判断 hasDirectives中是否有这个
           addDirective(directives,
               directiveNormalize(nodeName_(node)), 'E', maxPriority, ignoreDirective);
 
           // iterate over the attributes
+          //遍历所有属性 比如ng-app ng-controller
           for (var attr, name, nName, ngAttrName, value, isNgAttr, nAttrs = node.attributes,
                    j = 0, jj = nAttrs && nAttrs.length; j < jj; j++) {
             var attrStartName = false;
             var attrEndName = false;
 
-            attr = nAttrs[j];//元素属性
+            attr = nAttrs[j];//
             name = attr.name;
             value = trim(attr.value);
 
             // support ngAttr attribute binding
+            //浏览器对属性是否合法经常是挑刺的
+            //svg 
             ngAttrName = directiveNormalize(name);
+            //ng-attr
             if (isNgAttr = NG_ATTR_BINDING.test(ngAttrName)) {
+              //ng-attr-
               name = name.replace(PREFIX_REGEXP, '')
                 .substr(8).replace(/_(.)/g, function(match, letter) {
                   return letter.toUpperCase();
                 });
             }
-
+            //这是指定指令作用区间的功能，最常用的就是ng-repeat-start和ng-repeat-end了。
+            //http://www.cnblogs.com/HeJason/p/5514690.html
             var multiElementMatch = ngAttrName.match(MULTI_ELEMENT_DIR_RE);
+            //判断是否支持multiElement
             if (multiElementMatch && directiveIsMultiElement(multiElementMatch[1])) {
               attrStartName = name;
-              attrEndName = name.substr(0, name.length - 5) + 'end'; //带-
-              name = name.substr(0, name.length - 6); //不带-
+              attrEndName = name.substr(0, name.length - 5) + 'end';
+              name = name.substr(0, name.length - 6); //去掉-start
             }
 
             nName = directiveNormalize(name.toLowerCase());
-            attrsMap[nName] = name; //用于映射到原来的属性名
+            attrsMap[nName] = name;// $attr
             if (isNgAttr || !attrs.hasOwnProperty(nName)) {
-                attrs[nName] = value;
-                //是否是true或false的 属性
-                //比如multiple,selected,checked,disabled,readOnly,required,open
-                //这些属性
+                attrs[nName] = value;// Attributes类
+                //放入attrs集合
                 if (getBooleanAttrName(node, nName)) {
                   attrs[nName] = true; // presence means true
+                  //attrs  disabled 等属性置为true
                 }
             }
+            //对于属性值要处理是否修改和监听变化，例如{{name}}就需要处理：
+            //value="Hello, {{name}}"  
+            //http://liuwanlin.info/angularjsyuan-ma-yue-du-2bian-yi-lian-jie-guo-cheng/
             addAttrInterpolateDirective(node, directives, value, nName, isNgAttr);
             addDirective(directives, nName, 'A', maxPriority, ignoreDirective, attrStartName,
                           attrEndName);
           }
 
+          //http://www.tuicool.com/articles/V7zeAb
+          //https://github.com/angular/angular.js/issues/10736
+          //https://github.com/angular/angular.js/commit/7a9e3360284d58197a1fe34de57f5e0f6d1f4a76
           // use class as directive
           className = node.className;
           if (isObject(className)) {
               // Maybe SVGAnimatedString
               className = className.animVal;
           }
+          //https://my.oschina.net/u/1992917/blog/406421
           if (isString(className) && className !== '') {
+            //样式指令
+            //<span class="my-dir: exp;"></span>
             while (match = CLASS_DIRECTIVE_REGEXP.exec(className)) {
               nName = directiveNormalize(match[2]);
               if (addDirective(directives, nName, 'C', maxPriority, ignoreDirective)) {
-                attrs[nName] = trim(match[3]);
+                attrs[nName] = trim(match[3]); // 值
               }
+              //此数组的第 0 个元素是与正则表达式相匹配的文本，第 1 个元素是与 RegExpObject 的第 1 个子表达式相匹配的文本（如果有的话），第 2 个元素是与 RegExpObject 的第 2 个子表达式相匹配的文本（如果有的话），以此类推。除了数组元素和 length 属性之外，exec() 方法还返回两个属性。index 属性声明的是匹配文本的第一个字符的位置。
+              //match[0] 截取整个
               className = className.substr(match.index + match[0].length);
             }
           }
@@ -8773,6 +9049,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           break;
       }
 
+      //排序
       directives.sort(byPriority);
       return directives;
     }
@@ -8798,6 +9075,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
     /**
      * Given a node with an directive-start it collects all of the siblings until it finds
      * directive-end.
+     //直到找到directive-end标记
      * @param node
      * @param attrStart
      * @param attrEnd
@@ -8810,6 +9088,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         do {
           if (!node) {
             throw $compileMinErr('uterdir',
+                      //未结束的属性
                       "Unterminated attribute, found '{0}' but no matching '{1}' found.",
                       attrStart, attrEnd);
           }
@@ -8823,7 +9102,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       } else {
         nodes.push(node);
       }
-
+      //返回包装的节点
       return jqLite(nodes);
     }
 
@@ -8873,7 +9152,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
     /**
      * Once the directives have been collected, their compile functions are executed. This method
-     * is responsible for inlining directive templates as well as terminating the application
+     * is responsible for(为..负责) inlining directive templates as well as terminating the application
      * of the directives if the terminal directive has been reached.
      *
      * @param {Array} directives Array of collected directives to execute their compile function.
@@ -8885,7 +9164,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
      *                                                  child of the transcluded parent scope.
      * @param {JQLite} jqCollection If we are working on the root of the compile tree then this
      *                              argument has the root jqLite array so that we can replace nodes
-     *                              on it.
+     *                              on it. 可以在他上面替换节点
      * @param {Object=} originalReplaceDirective An optional directive that will be ignored when
      *                                           compiling the transclusion.
      * @param {Array.<Function>} preLinkFns
@@ -8894,9 +9173,12 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
      *                                        node
      * @returns {Function} linkFn
      */
+     //返回链接函数
     function applyDirectivesToNode(directives, compileNode, templateAttrs, transcludeFn,
                                    jqCollection, originalReplaceDirective, preLinkFns, postLinkFns,
                                    previousCompileContext) {
+      
+      //如果previousCompileContext 为undefined 那么 previousCompileContext 是参数指向新的{} 跟外部的previousCompileContext没关系了
       previousCompileContext = previousCompileContext || {};
 
       var terminalPriority = -Number.MAX_VALUE,
@@ -8908,7 +9190,6 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           hasTranscludeDirective = false,
           hasTemplate = false,
           hasElementTranscludeDirective = previousCompileContext.hasElementTranscludeDirective,
-          //用jqLite包装下
           $compileNode = templateAttrs.$$element = jqLite(compileNode),
           directive,
           directiveName,
@@ -8921,29 +9202,37 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           directiveValue;
 
       // executes all directives on the current element
+      //在这个元素上执行所有指令
       for (var i = 0, ii = directives.length; i < ii; i++) {
         directive = directives[i];
-        var attrStart = directive.$$start;
+        var attrStart = directive.$$start;// multiElement
         var attrEnd = directive.$$end;
 
         // collect multiblock sections
         if (attrStart) {
+          //compileNode  
           $compileNode = groupScan(compileNode, attrStart, attrEnd);
         }
         $template = undefined;
 
+        //  directive.priority 低于 最低值
         if (terminalPriority > directive.priority) {
           break; // prevent further processing of directives
         }
 
         if (directiveValue = directive.scope) {
 
+          //跳过检查异步模板
           // skip the check for directives with async templates, we'll check the derived sync
           // directive when the template arrives
           if (!directive.templateUrl) {
             if (isObject(directiveValue)) {
               // This directive is trying to add an isolated scope.
+              //尝试添加一个独立的scope
               // Check that there is no scope of any kind already
+              //判断是否已经存在scope了
+
+              //比如 ng-controller指令 和 另外一个有独立作用域的指令在一个节点上那么就会报错了
               assertNoDuplicate('new/isolated scope', newIsolateScopeDirective || newScopeDirective,
                                 directive, $compileNode);
               newIsolateScopeDirective = directive;
@@ -8960,21 +9249,21 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
         directiveName = directive.name;
 
-        // If we encounter(遇到) a condition that can result in transclusion（嵌入） on the directive,
-        // then scan ahead in the remaining（剩下的） directives for others that may cause a multiple
+        // If we encounter a condition that can result in transclusion on the directive,
+        // then scan ahead in the remaining directives for others that may cause a multiple
         // transclusion error to be thrown during the compilation process.  If a matching directive
-        // is found, then we know that when we encounter a transcluded directive, we need to eagerly（马上）
+        // is found, then we know that when we encounter a transcluded directive, we need to eagerly
         // compile the `transclude` function rather than doing it lazily in order to throw
         // exceptions at the correct time
         if (!didScanForMultipleTransclusion && ((directive.replace && (directive.templateUrl || directive.template))
             || (directive.transclude && !directive.$$tlb))) {
-                var candidateDirective;
+                var candidateDirective;//候选指令
 
-                //候选指令
                 for (var scanningIndex = i + 1; candidateDirective = directives[scanningIndex++];) {
                     if ((candidateDirective.transclude && !candidateDirective.$$tlb)
                         || (candidateDirective.replace && (candidateDirective.templateUrl || candidateDirective.template))) {
                         mightHaveMultipleTransclusionError = true;
+                        //有可能存在多个嵌套指令
                         break;
                     }
                 }
@@ -8982,6 +9271,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
                 didScanForMultipleTransclusion = true;
         }
 
+        //如果不存在templateUrl 且存在controller
         if (!directive.templateUrl && directive.controller) {
           directiveValue = directive.controller;
           controllerDirectives = controllerDirectives || createMap();
@@ -8990,10 +9280,11 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           controllerDirectives[directiveName] = directive;
         }
 
+        //判断是否存在嵌套
         if (directiveValue = directive.transclude) {
           hasTranscludeDirective = true;
 
-          // Special case ngIf and ngRepeat so that we don't complain about duplicate transclusion.
+          // Special case ngIf and ngRepeat so that we don't complain about(申诉) duplicate（多个） transclusion.
           // This option should only be used by directives that know how to safely handle element transclusion,
           // where the transcluded nodes are added or replaced after linking.
           if (!directive.$$tlb) {
@@ -9001,31 +9292,30 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
             nonTlbTranscludeDirective = directive;
           }
 
-          //针对transclude的
           if (directiveValue == 'element') {
             hasElementTranscludeDirective = true;
             terminalPriority = directive.priority;
             $template = $compileNode;
-            //用注释节点包装下
+
+            //注释节点
+            //templateAttrs[directiveName] 在收集指令的时候附的值
             $compileNode = templateAttrs.$$element =
                 jqLite(compile.$$createComment(directiveName, templateAttrs[directiveName]));
             compileNode = $compileNode[0];
-            //sliceArgs 调用数组 slice方法 返回新的数组
-
-            //jqCollection = rootElement
             replaceWith(jqCollection, sliceArgs($template), compileNode);
 
             // Support: Chrome < 50
             // https://github.com/angular/angular.js/issues/14041
 
             // In the versions of V8 prior to Chrome 50, the document fragment that is created
-            // in the `replaceWith` function is improperly（不恰当的） garbage collected despite（尽管） still
+            // in the `replaceWith` function is improperly garbage collected despite still
             // being referenced by the `parentNode` property of all of the child nodes.  By adding
             // a reference to the fragment via a different property, we can avoid that incorrect
             // behavior.
             // TODO: remove this line after Chrome 50 has been released
             $template[0].$$parentNode = $template[0].parentNode;
 
+            //这里的$template 在transclude element的时候起到了关键作用
             childTranscludeFn = compilationGenerator(mightHaveMultipleTransclusionError, $template, transcludeFn, terminalPriority,
                                         replaceDirective && replaceDirective.name, {
                                           // Don't pass in:
@@ -9104,7 +9394,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           }
         }
 
-        //如果有template属性
+        //template 字符串
         if (directive.template) {
           hasTemplate = true;
           assertNoDuplicate('template', templateDirective, directive, $compileNode);
@@ -9114,8 +9404,10 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
               ? directive.template($compileNode, templateAttrs)
               : directive.template;
 
+          //判断startSymbol是不是{{
           directiveValue = denormalizeTemplate(directiveValue);
 
+          //在replace情况下 不能存在两个根节点
           if (directive.replace) {
             replaceDirective = directive;
             if (jqLiteIsTextNode(directiveValue)) {
@@ -9125,28 +9417,34 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
             }
             compileNode = $template[0];
 
+            //如果模板有两个根节点会报错
             if ($template.length != 1 || compileNode.nodeType !== NODE_TYPE_ELEMENT) {
               throw $compileMinErr('tplrt',
                   "Template for directive '{0}' must have exactly one root element. {1}",
                   directiveName, '');
             }
 
+            //替换注释节点
             replaceWith(jqCollection, $compileNode, compileNode);
 
             var newTemplateAttrs = {$attr: {}};
 
+            //合并原有节点中的指令和模板中的指令
             // combine directives from the original node and from the template:
             // - take the array of directives for this element
             // - split it into two parts, those that already applied (processed) and those that weren't (unprocessed)
             // - collect directives from the template and sort them by priority
             // - combine directives as: processed + template + unprocessed
             var templateDirectives = collectDirectives(compileNode, [], newTemplateAttrs);
+            
+            //splice() 方法与 slice() 方法的作用是不同的，splice() 方法会直接对数组进行修改
             var unprocessedDirectives = directives.splice(i + 1, directives.length - (i + 1));
 
             if (newIsolateScopeDirective || newScopeDirective) {
               // The original directive caused the current element to be replaced but this element
               // also needs to have a new scope, so we need to tell the template directives
               // that they would need to get their scope from further up, if they require transclusion
+              
               markDirectiveScope(templateDirectives, newIsolateScopeDirective, newScopeDirective);
             }
             directives = directives.concat(templateDirectives).concat(unprocessedDirectives);
@@ -9200,17 +9498,20 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       }
 
       nodeLinkFn.scope = newScopeDirective && newScopeDirective.scope === true;
-      nodeLinkFn.transcludeOnThisElement = hasTranscludeDirective;
-      nodeLinkFn.templateOnThisElement = hasTemplate;
+      nodeLinkFn.transcludeOnThisElement = hasTranscludeDirective;//判断是否嵌入
+      nodeLinkFn.templateOnThisElement = hasTemplate;//判断是否有模板
       nodeLinkFn.transclude = childTranscludeFn;
 
       previousCompileContext.hasElementTranscludeDirective = hasElementTranscludeDirective;
 
+      //依赖于是否有templateUrl
       // might be normal or delayed nodeLinkFn depending on if templateUrl is present
       return nodeLinkFn;
 
       ////////////////////
 
+      //有编译属性时会调用此方法
+      //directive.compile
       function addLinkFns(pre, post, attrStart, attrEnd) {
         if (pre) {
           if (attrStart) pre = groupElementsLinkFnWrapper(pre, attrStart, attrEnd);
@@ -9254,6 +9555,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         if (boundTranscludeFn) {
           // track `boundTranscludeFn` so it can be unwrapped if `transcludeFn`
           // is later passed as `parentBoundTranscludeFn` to `publicLinkFn`
+
+          //controllerBoundTransclude 里调用boundTranscludeFn
           transcludeFn = controllersBoundTransclude;
           transcludeFn.$$boundTransclude = boundTranscludeFn;
           // expose the slots on the `$transclude` function
@@ -9262,6 +9565,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           };
         }
 
+        //z
         if (controllerDirectives) {
           elementControllers = setupControllers($element, attrs, transcludeFn, controllerDirectives, isolateScope, scope, newIsolateScopeDirective);
         }
@@ -9361,6 +9665,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         if (newIsolateScopeDirective && (newIsolateScopeDirective.template || newIsolateScopeDirective.templateUrl === null)) {
           scopeToChild = isolateScope;
         }
+
+        //子节点的LinkFn 就是compositeLinkFn
         childLinkFn && childLinkFn(scopeToChild, linkNode.childNodes, undefined, boundTranscludeFn);
 
         // POSTLINKING
@@ -9479,9 +9785,10 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
         var controller = directive.controller;
         if (controller == '@') {
-          controller = attrs[directive.name];
+          controller = attrs[directive.name];//ngController
         }
 
+        //调用controllerProvider 
         var controllerInstance = $controller(controller, locals, true, directive.controllerAs);
 
         // For directives with element transclusion the element is a comment.
@@ -9514,17 +9821,23 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
      * @param {string} location The directive must be found in specific format.
      *   String containing any of theses characters:
      *
-     *   * `E`: element name
+     *   * `E`: element name 
      *   * `A': attribute
      *   * `C`: class
      *   * `M`: comment
      * @returns {boolean} true if directive was added.
+     * 如果directive加入了 就返回true
+     */
+     /*
+      location参数 就是代表是 元素 ，属性 ，样式 ，还是注释
      */
     function addDirective(tDirectives, name, location, maxPriority, ignoreDirective, startAttrName,
                           endAttrName) {
       if (name === ignoreDirective) return null;
       var match = null;
+      //判断hasDirectives中是否有这个name属性
       if (hasDirectives.hasOwnProperty(name)) {
+        //从$injector中获取该name的directive
         for (var directive, directives = $injector.get(name + Suffix),
             i = 0, ii = directives.length; i < ii; i++) {
           try {
@@ -9639,6 +9952,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
             if (jqLiteIsTextNode(content)) {
               $template = [];
             } else {
+              //包装svg.math 并移除模板中的注释节点 
               $template = removeComments(wrapTemplate(templateNamespace, trim(content)));
             }
             compileNode = $template[0];
@@ -9651,6 +9965,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
             tempTemplateAttrs = {$attr: {}};
             replaceWith($rootElement, $compileNode, compileNode);
+
+            //比如ngTransclude指令
             var templateDirectives = collectDirectives(compileNode, [], tempTemplateAttrs);
 
             if (isObject(origAsyncDirective.scope)) {
@@ -9740,6 +10056,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
     function assertNoDuplicate(what, previousDirective, directive, element) {
 
+      //如果定义了moduleName 就再包装下
       function wrapModuleNameIfDefined(moduleName) {
         return moduleName ?
           (' (module: ' + moduleName + ')') :
@@ -9809,11 +10126,21 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       }
     }
 
-
+    //插值
+    //node ng-app
+    //directives []
+    //value Demo
+    //name ngApp
+    //allOrNothing  为isNgAttr false
+    //https://segmentfault.com/a/1190000002753321
     function addAttrInterpolateDirective(node, directives, value, name, allOrNothing) {
+      
       var trustedContext = getTrustedContext(node, name);
       allOrNothing = ALL_OR_NOTHING_ATTRS[name] || allOrNothing;
+    //ngSrc,ngSrcset,src,srcset
 
+      //must have expression
+      //默认是一定有表达式的
       var interpolateFn = $interpolate(value, true, trustedContext, allOrNothing);
 
       // no interpolation found -> ignore
@@ -9826,6 +10153,9 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
             startingTag(node));
       }
 
+        /*
+          加入compile 函数
+        */
       directives.push({
         priority: 100,
         compile: function() {
@@ -9833,6 +10163,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
               pre: function attrInterpolatePreLinkFn(scope, element, attr) {
                 var $$observers = (attr.$$observers || (attr.$$observers = createMap()));
 
+                //dom事件名称是不允许的
                 if (EVENT_HANDLER_ATTR_REGEXP.test(name)) {
                   throw $compileMinErr('nodomevents',
                       "Interpolations for HTML DOM event attributes are disallowed.  Please use the " +
@@ -9853,12 +10184,15 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
                 // register any observers
                 if (!interpolateFn) return;
 
+                //初始化属性值  以便在scope初始化时需要这个值的时候
+                //否则这个值 在linking 是无效的
                 // initialize attr object so that it's ready in case we need the value for isolate
                 // scope initialization, otherwise the value would not be available from isolate
                 // directive's linking fn during linking phase
                 attr[name] = interpolateFn(scope);
 
                 ($$observers[name] || ($$observers[name] = [])).$$inter = true;
+                //scope.watch
                 (attr.$$observers && attr.$$observers[name].$$scope || scope).
                   $watch(interpolateFn, function interpolateFnWatchAction(newValue, oldValue) {
                     //special case for class attribute addition + removal
@@ -9882,7 +10216,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
     /**
      * This is a special jqLite.replaceWith, which can replace items which
-     * have no parents, provided that the containing jqLite collection is provided.
+     * have no parents, provided that（假设） the containing jqLite collection is provided.
      *
      * @param {JqLite=} $rootElement The root of the compile tree. Used so that we can replace nodes
      *                               in the root of the tree.
@@ -9899,7 +10233,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       if ($rootElement) {
         for (i = 0, ii = $rootElement.length; i < ii; i++) {
           if ($rootElement[i] == firstElementToRemove) {
-            $rootElement[i++] = newNode;
+            $rootElement[i++] = newNode;//替换新节点
             for (var j = i, j2 = j + removeCount - 1,
                      jj = $rootElement.length;
                  j < jj; j++, j2++) {
@@ -9923,14 +10257,10 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       }
 
       if (parent) {
-        //直接用replaceChild方法
-        //replaceChild 实现子节点(对象)的替换。返回被替换对象的引用。
-
-        //语法： 
-        //node.replaceChild (newnode,oldnew ) 
         parent.replaceChild(newNode, firstElementToRemove);
       }
 
+        //把所有移除的节点放到一个fragment里
       // Append all the `elementsToRemove` to a fragment. This will...
       // - remove them from the DOM
       // - allow them to still be traversed with .nextSibling
@@ -9941,6 +10271,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       }
 
       if (jqLite.hasData(firstElementToRemove)) {
+
+        //拷贝用户数据到新节点上
         // Copy over user data (that includes Angular's $scope etc.). Don't copy private
         // data here because there's no public interface in jQuery to do that and copying over
         // event listeners (which is the main use of private data) wouldn't work anyway.
@@ -9954,6 +10286,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       // This includes invoking the $destroy event on any elements with listeners.
       jqLite.cleanData(fragment.querySelectorAll('*'));
 
+      //从第一个节点开始删
       // Update the jqLite collection to only contain the `newNode`
       for (i = 1; i < removeCount; i++) {
         delete elementsToRemove[i];
@@ -10136,6 +10469,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
     }
   }];
 }
+/*CompileProvider结束*/
 
 function SimpleChange(previous, current) {
   this.previousValue = previous;
@@ -10144,7 +10478,10 @@ function SimpleChange(previous, current) {
 SimpleChange.prototype.isFirstChange = function() { return this.previousValue === _UNINITIALIZED_VALUE; };
 
 
+//非获取匹配，匹配pattern但不获取匹配结果，不进行存储供以后使用。这在使用或字符“(|)”来组合一个模式的各个部分时很有用。
+//例如“industr(?:y|ies)”就是一个比“industry|industries”更简略的表达式。
 var PREFIX_REGEXP = /^((?:x|data)[\:\-_])/i;
+//http://www.cnblogs.com/whitewolf/p/3495822.html
 /**
  * Converts all accepted directives format into proper directive name.
  * @param name Name to normalize
@@ -10249,6 +10586,8 @@ function removeComments(jqNodes) {
 var $controllerMinErr = minErr('$controller');
 
 
+//会根据Controller as ctrl 类似去判断
+//在调用$controller方法时 会根据这个正则去判断
 var CNTRL_REG = /^(\S+)(\s+as\s+([\w$]+))?$/;
 function identifierForController(controller, ident) {
   if (ident && isString(ident)) return ident;
@@ -10288,7 +10627,8 @@ function $ControllerProvider() {
    * @param {string|Object} name Controller name, or an object map of controllers where the keys are
    *    the names and the values are the constructors.
    * @param {Function|Array} constructor Controller constructor fn (optionally decorated with DI
-   *    annotations in the array notation).
+   *    annotations in the array notation 数组注解).
+
    */
   this.register = function(name, constructor) {
     assertNotHasOwnProperty(name, 'controller');
@@ -10333,6 +10673,7 @@ function $ControllerProvider() {
      * @return {Object} Instance of given controller.
      *
      * @description
+      实例化controller
      * `$controller` service is responsible for instantiating controllers.
      *
      * It's just a simple call to {@link auto.$injector $injector}, but extracted into
@@ -10359,7 +10700,7 @@ function $ControllerProvider() {
             "Badly formed controller string '{0}'. " +
             "Must match `__name__ as __id__` or `__name__`.", expression);
         }
-        constructor = match[1],
+        constructor = match[1],//构造函数
         identifier = identifier || match[3];
         expression = controllers.hasOwnProperty(constructor)
             ? controllers[constructor]
@@ -12113,6 +12454,7 @@ function createHttpBackend($browser, createXhr, $browserDefer, callbacks, rawDoc
 }
 
 var $interpolateMinErr = angular.$interpolateMinErr = minErr('$interpolate');
+//https://segmentfault.com/q/1010000007677889?_ea=1423254
 $interpolateMinErr.throwNoconcat = function(text) {
   throw $interpolateMinErr('noconcat',
       "Error while interpolating: {0}\nStrict Contextual Escaping disallows " +
@@ -12218,12 +12560,17 @@ function $InterpolateProvider() {
       return '\\\\\\' + ch;
     }
 
+    //替换\{ \} 为 {{}}
+    //摆脱插值标记的机制，
+    //那就是通过在嵌入标记的开始和结束符号前面加上反斜杠\，
+    //AngularJS将会把这部分渲染为普通的部分，所以也不会被解读为为表达式或者数据绑定
     function unescapeText(text) {
       return text.replace(escapedStartRegexp, startSymbol).
         replace(escapedEndRegexp, endSymbol);
     }
 
     function stringify(value) {
+      //undefined == null 为true
       if (value == null) { // null || undefined
         return '';
       }
@@ -12256,9 +12603,9 @@ function $InterpolateProvider() {
      *
      * @requires $parse
      * @requires $sce
-     *
+     *https://segmentfault.com/a/1190000002753321
      * @description
-     *
+     * 编译一段带有嵌入标记的语句
      * Compiles a string with markup into an interpolation function. This service is used by the
      * HTML {@link ng.$compile $compile} service for data binding. See
      * {@link ng.$interpolateProvider $interpolateProvider} for configuring the
@@ -12293,7 +12640,7 @@ function $InterpolateProvider() {
      * `allOrNothing` is useful for interpolating URLs. `ngSrc` and `ngSrcset` use this behavior.
      *
      * #### Escaped Interpolation
-     * $interpolate provides a mechanism for escaping interpolation markers. Start and end markers
+     * $interpolate provides a mechanism for escaping interpolation markers(标记). Start and end markers
      * can be escaped by preceding each of their characters with a REVERSE SOLIDUS U+005C (backslash).
      * It will be rendered as a regular start/end marker, and will not be interpreted as an expression
      * or binding.
@@ -12362,6 +12709,7 @@ function $InterpolateProvider() {
      *    provides Strict Contextual Escaping for details.
      * @param {boolean=} allOrNothing if `true`, then the returned function returns undefined
      *    unless all embedded expressions evaluate to a value other than `undefined`.
+     * 如果这个参数的值被设置为true，那么只有text中所有嵌入的表达式没有一个被转换为undefined的时候才会返回我们期望的函数。
      * @returns {function(context)} an interpolation function which is used to compute the
      *    interpolated string. The function has these parameters:
      *
@@ -12396,10 +12744,12 @@ function $InterpolateProvider() {
         if (((startIndex = text.indexOf(startSymbol, index)) != -1) &&
              ((endIndex = text.indexOf(endSymbol, startIndex + startSymbolLength)) != -1)) {
           if (index !== startIndex) {
+            // 比如 hello {{name}}
             concat.push(unescapeText(text.substring(index, startIndex)));
           }
           exp = text.substring(startIndex + startSymbolLength, endIndex);
           expressions.push(exp);
+          //调用parseProvider
           parseFns.push($parse(exp, parseStringifyInterceptor));
           index = endIndex + endSymbolLength;
           expressionPositions.push(concat.length);
@@ -12413,7 +12763,7 @@ function $InterpolateProvider() {
         }
       }
 
-      // Concatenating expressions makes it hard to reason about whether some combination of
+      // Concatenating(连接) expressions makes it hard to reason about whether some combination of
       // concatenated values are unsafe to use and could easily lead to XSS.  By requiring that a
       // single expression be used for iframe[src], object[src], etc., we ensure that the value
       // that's used is assigned or constructed by some JS code somewhere that is more testable or
@@ -12438,13 +12788,16 @@ function $InterpolateProvider() {
             $sce.valueOf(value);
         };
 
+        //返回interpolationFn方法
         return extend(function interpolationFn(context) {
             var i = 0;
             var ii = expressions.length;
             var values = new Array(ii);
 
             try {
+              //根据表达式来解析
               for (; i < ii; i++) {
+                //调用parseFns得到value
                 values[i] = parseFns[i](context);
               }
 
@@ -14018,6 +14371,8 @@ function ensureSafeMemberName(name, fullExpression) {
 }
 
 function getStringValue(name) {
+  //属性名必须是字符串
+  //非字符串不能在对象中用作键
   // Property names must be strings. This means that non-string objects cannot be used
   // as keys in an object. Any non-string object, including a number, is typecasted
   // into a string via the toString method.
@@ -14028,7 +14383,7 @@ function getStringValue(name) {
   // 'broken' (doesn't return a string, isn't a function, etc.), an error will be thrown:
   //
   // TypeError: Cannot convert object to primitive value
-  //
+  //为了性能原因，不抓取此类错误 允许传播
   // For performance reasons, we don't catch this error here and allow it to propagate up the call
   // stack. Note that you'll get the same error in JavaScript if you try to access a property using
   // such a 'broken' object as a key.
@@ -14036,6 +14391,7 @@ function getStringValue(name) {
 }
 
 function ensureSafeObject(obj, fullExpression) {
+  //极好的check
   // nifty check if obj is Function that is fast and works across iframes and other contexts
   if (obj) {
     if (obj.constructor === obj) {
@@ -14100,6 +14456,7 @@ var ESCAPE = {"n":"\n", "f":"\f", "r":"\r", "t":"\t", "v":"\v", "'":"'", '"':'"'
 
 /**
  * @constructor
+ https://code.angularjs.org/1.6.4/docs/guide/expression
  */
 var Lexer = function(options) {
   this.options = options;
@@ -14107,7 +14464,7 @@ var Lexer = function(options) {
 
 Lexer.prototype = {
   constructor: Lexer,
-
+  //http://www.cnblogs.com/web2-developer/p/angular-10.html#top
   lex: function(text) {
     this.text = text;
     this.index = 0;
@@ -14115,22 +14472,22 @@ Lexer.prototype = {
 
     while (this.index < this.text.length) {
       var ch = this.text.charAt(this.index);
-      if (ch === '"' || ch === "'") {
+      if (ch === '"' || ch === "'") {  //识别字符串
         this.readString(ch);
       } else if (this.isNumber(ch) || ch === '.' && this.isNumber(this.peek())) {
-        this.readNumber();
+        this.readNumber();//http://dict.youdao.com/w/%E6%8C%87%E6%95%B0%E8%A1%A8%E7%A4%BA%E6%B3%95/
       } else if (this.isIdentifierStart(this.peekMultichar())) {
         this.readIdent();
-      } else if (this.is(ch, '(){}[].,;:?')) {
+      } else if (this.is(ch, '(){}[].,;:?')) { //判断index是否为-1
         this.tokens.push({index: this.index, text: ch});
         this.index++;
       } else if (this.isWhitespace(ch)) {
         this.index++;
-      } else {
-        var ch2 = ch + this.peek();
-        var ch3 = ch2 + this.peek(2);
+      } else {//操作符
+        var ch2 = ch + this.peek(); //2个字符
+        var ch3 = ch2 + this.peek(2);  //3个 字符
         var op1 = OPERATORS[ch];
-        var op2 = OPERATORS[ch2];
+        var op2 = OPERATORS[ch2];//操作符列表
         var op3 = OPERATORS[ch3];
         if (op1 || op2 || op3) {
           var token = op3 ? ch3 : (op2 ? ch2 : ch);
@@ -14147,7 +14504,7 @@ Lexer.prototype = {
   is: function(ch, chars) {
     return chars.indexOf(ch) !== -1;
   },
-
+  //偷一个字符
   peek: function(i) {
     var num = i || 1;
     return (this.index + num < this.text.length) ? this.text.charAt(this.index + num) : false;
@@ -14168,7 +14525,7 @@ Lexer.prototype = {
         this.options.isIdentifierStart(ch, this.codePointAt(ch)) :
         this.isValidIdentifierStart(ch);
   },
-
+  //标识符
   isValidIdentifierStart: function(ch) {
     return ('a' <= ch && ch <= 'z' ||
             'A' <= ch && ch <= 'Z' ||
@@ -14198,6 +14555,7 @@ Lexer.prototype = {
     if (!peek) {
       return ch;
     }
+    //http://www.cnblogs.com/lanelim/p/4964947.html
     var cp1 = ch.charCodeAt(0);
     var cp2 = peek.charCodeAt(0);
     if (cp1 >= 0xD800 && cp1 <= 0xDBFF && cp2 >= 0xDC00 && cp2 <= 0xDFFF) {
@@ -14224,7 +14582,7 @@ Lexer.prototype = {
     var start = this.index;
     while (this.index < this.text.length) {
       var ch = lowercase(this.text.charAt(this.index));
-      if (ch == '.' || this.isNumber(ch)) {
+      if (ch == '.' || this.isNumber(ch)) {//是数字或者是.
         number += ch;
       } else {
         var peekCh = this.peek();
@@ -14237,7 +14595,7 @@ Lexer.prototype = {
         } else if (this.isExpOperator(ch) &&
             (!peekCh || !this.isNumber(peekCh)) &&
             number.charAt(number.length - 1) == 'e') {
-          this.throwError('Invalid exponent');
+          this.throwError('Invalid exponent');//无效的指数
         } else {
           break;
         }
@@ -14280,6 +14638,7 @@ Lexer.prototype = {
       rawString += ch;
       if (escape) {
         if (ch === 'u') {
+          //不是unicode编码就抛出错误
           var hex = this.text.substring(this.index + 1, this.index + 5);
           if (!hex.match(/[\da-f]{4}/i)) {
             this.throwError('Invalid unicode escape [\\u' + hex + ']');
@@ -14298,7 +14657,7 @@ Lexer.prototype = {
         this.tokens.push({
           index: start,
           text: rawString,
-          constant: true,
+          constant: true,// 常量
           value: string
         });
         return;
@@ -14339,7 +14698,7 @@ AST.NGValueParameter = 'NGValueParameter';
 AST.prototype = {
   ast: function(text) {
     this.text = text;
-    this.tokens = this.lexer.lex(text);
+    this.tokens = this.lexer.lex(text); //分析得到tokens列表
 
     var value = this.program();
 
@@ -14355,7 +14714,7 @@ AST.prototype = {
     while (true) {
       if (this.tokens.length > 0 && !this.peek('}', ')', ';', ']'))
         body.push(this.expressionStatement());
-      if (!this.expect(';')) {
+      if (!this.expect(';')) { //碰到;跳出循环
         return { type: AST.Program, body: body};
       }
     }
@@ -14368,7 +14727,7 @@ AST.prototype = {
   filterChain: function() {
     var left = this.expression();
     var token;
-    while ((token = this.expect('|'))) {
+    while ((token = this.expect('|'))) { // | 右面 可以是filter
       left = this.filter(left);
     }
     return left;
@@ -14377,7 +14736,7 @@ AST.prototype = {
   expression: function() {
     return this.assignment();
   },
-
+  //赋值
   assignment: function() {
     var result = this.ternary();
     if (this.expect('=')) {
@@ -14399,7 +14758,7 @@ AST.prototype = {
     }
     return test;
   },
-
+  //逻辑或
   logicalOR: function() {
     var left = this.logicalAND();
     while (this.expect('||')) {
@@ -14467,7 +14826,7 @@ AST.prototype = {
       primary = this.filterChain();
       this.consume(')');
     } else if (this.expect('[')) {
-      primary = this.arrayDeclaration();
+      primary = this.arrayDeclaration();//数组定义
     } else if (this.expect('{')) {
       primary = this.object();
     } else if (this.selfReferential.hasOwnProperty(this.peek().text)) {
@@ -14491,6 +14850,7 @@ AST.prototype = {
         primary = { type: AST.MemberExpression, object: primary, property: this.expression(), computed: true };
         this.consume(']');
       } else if (next.text === '.') {
+        //成员表达式
         primary = { type: AST.MemberExpression, object: primary, property: this.identifier(), computed: false };
       } else {
         this.throwError('IMPOSSIBLE');
@@ -14634,7 +14994,7 @@ AST.prototype = {
   expect: function(e1, e2, e3, e4) {
     var token = this.peek(e1, e2, e3, e4);
     if (token) {
-      this.tokens.shift();
+      this.tokens.shift();//弹出
       return token;
     }
     return false;
@@ -15880,6 +16240,7 @@ function $ParseProvider() {
 
     return $parse;
 
+    //expression {{expression}}
     function $parse(exp, interceptorFn, expensiveChecks) {
       var parsedExpression, oneTime, cacheKey;
 
@@ -17169,6 +17530,7 @@ function $RootScopeProvider() {
         array.unshift(watcher);
         incrementWatchersCount(this, 1);
 
+        //注销
         return function deregisterWatch() {
           if (arrayRemove(array, watcher) >= 0) {
             incrementWatchersCount(scope, -1);
@@ -17814,6 +18176,7 @@ function $RootScopeProvider() {
        *
        * @returns {*} The result of evaluating the expression.
        */
+       //expr 可以为function
       $apply: function(expr) {
         try {
           beginPhase('$apply');
@@ -18149,6 +18512,8 @@ function $RootScopeProvider() {
 /**
  * @description
  * Private service to sanitize uris for links and images. Used by $compile and $sanitize.
+ //净化的uri
+ //白名单
  */
 function $$SanitizeUriProvider() {
   var aHrefSanitizationWhitelist = /^\s*(https?|ftp|mailto|tel|file):/,
@@ -18156,6 +18521,7 @@ function $$SanitizeUriProvider() {
 
   /**
    * @description
+   * 获取或重写默认的正则表达式
    * Retrieves or overrides the default regular expression that is used for whitelisting of safe
    * urls during a[href] sanitization.
    *
@@ -20884,6 +21250,8 @@ var DATE_FORMATS_SPLIT = /((?:[^yMLdHhmsaZEwG']+)|(?:'(?:[^']|'')*')|(?:E+|y+|M+
      </file>
    </example>
  */
+
+ //http://www.tuicool.com/articles/vmmeQvj
 dateFilter.$inject = ['$locale'];
 function dateFilter($locale) {
 
@@ -21880,6 +22248,7 @@ var htmlAnchorDirective = valueFn({
         // SVGAElement does not use the href attribute, but rather the 'xlinkHref' attribute.
         var href = toString.call(element.prop('href')) === '[object SVGAnimatedString]' ?
                    'xlink:href' : 'href';
+        //先执行绑定的ng-click方法
         element.on('click', function(event) {
           // if we have no href url, then don't navigate anywhere.
           if (!element.attr(href)) {
@@ -22267,11 +22636,16 @@ forEach(BOOLEAN_ATTR, function(propName, attrName) {
 });
 
 // aliased input attrs are evaluated
+//别名属性 可以被计算
 forEach(ALIASED_ATTR, function(htmlAttr, ngAttr) {
   ngAttributeAliasDirectives[ngAttr] = function() {
     return {
       priority: 100,
       link: function(scope, element, attr) {
+        //ngPattern的特殊例子 
+        //当一个字面意义的正则被用作表达式时
+        //这种我们就不必watch任何东西了。
+        //用于表单验证
         //special case ngPattern when a literal regular expression value
         //is used as the expression (this way we don't have to watch anything).
         if (ngAttr === "ngPattern" && attr.ngPattern.charAt(0) == "/") {
@@ -24733,7 +25107,6 @@ var ngBindDirective = ['$compile', function($compile) {
         $compile.$$addBindingInfo(element, attr.ngBind);
         element = element[0];
         scope.$watch(attr.ngBind, function ngBindWatchAction(value) {
-          //textContent属性
           element.textContent = isUndefined(value) ? '' : value;
         });
       };

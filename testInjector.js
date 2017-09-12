@@ -26,7 +26,7 @@ function annotate(fn, strictDi, name) {
 function createInjector(modulesToLoad, strictDi) {
   strictDi = (strictDi === true);
   var INSTANTIATING = {},//instantiating
-      providerSuffix = 'Provider',
+      providerSuffix = 'Provider',//provider后缀
       path = [],
       //loadedModules = new HashMap([], true),
       providerCache = {
@@ -87,12 +87,12 @@ function createInjector(modulesToLoad, strictDi) {
 
   //去ProviderInjector的 providerCache里去找
 
-  //invoke $get就是返回  protorInstanceInjector
+  // invoke $get就是返回  protorInstanceInjector
 
   instanceInjector = protoInstanceInjector.get('$injector');//上面定义的providerCache.$jnjector
   instanceInjector.strictDi = strictDi;
   //forEach(runBlocks, function(fn) { if (fn) instanceInjector.invoke(fn); });
-console.log(instanceInjector === protoInstanceInjector);
+console.log("isEqual:"+ (instanceInjector === protoInstanceInjector));
   return instanceInjector;
 
   ////////////////////////////////////
@@ -173,10 +173,11 @@ console.log(instanceInjector === protoInstanceInjector);
       }
 
       console.log(fn);
+        console.log("serviceName:"+serviceName);
       //注入参数
       var args = injectionArgs(fn, locals, serviceName);
 
-        console.log("argslength:"+args.length);
+        console.log("serviceName:"+serviceName+";argslength:"+args.length);
       if (isArray(fn)) { //比如['$scope',function($scope){}]
         fn = fn[fn.length - 1];//取数组的最后一个
       }
@@ -212,6 +213,10 @@ var isArray = Array.isArray;
 
 
 var injector = createInjector();
+var injector1 = createInjector();
+
+console.log("injector == injector1:" + (injector1 === injector));
+
 console.log('provide:'+ injector.has("$provide"));//false
 console.log(injector.has("$injector"));//true
 

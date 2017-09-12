@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html ng-app="Demo">
+<head>
+	<title></title>
+	<script type="text/javascript" src="js/angular.js"></script>
+	<style type="text/css">
+		#id {height:500px;}
+  #bottom {margin-top:1500px;}
+	</style>
+</head>
+<body >
+	
+
+  <div  ng-controller="testCtrl as ctrl">
+      <div id="top" ng-click="ctrl.gotoBottom()">跳到底部</div>
+      <div id="bottom" ng-click="ctrl.gotoTop()">跳到顶部</div>
+	   <a ng-click="ctrl.goto()">testa</a>
+  </div>
+
+<script type="text/javascript">
+	
+
+	(function () {
+    //不初始化Demo会报错
+    angular.module("Demo", [],function($provide){  
+    $provide.provider('Customer',function(){  
+        this.$get=function(){  
+            return {  
+                message:"Customer Provide"  
+            };  
+        }  
+    })})
+    .controller("testCtrl",["$location", "$anchorScroll","Customer",testCtrl]);
+    function testCtrl($location,$anchorScroll,Customer){
+
+        //angular.element(document).injector()
+		this.goto=function(){  
+             alert('ss');
+        }  
+    };
+  }());
+
+
+  function initWatchVal() { }
+function Scope() {
+ this.$$watchers = [];
+}
+
+Scope.prototype.$watch = function(watchFn, listenerFn) {
+   var watcher = {
+   watchFn: watchFn,
+   listenerFn: listenerFn,
+   last: initWatchVal
+   };
+   this.$$watchers.push(watcher);
+}
+
+Scope.prototype.$digest = function() {
+ var dirty;
+ do {
+ dirty = this.$$digestOnce();
+ } while (dirty);
+};
+
+
+Scope.prototype.$$digestOnce = function() {
+ var self = this;
+ var newValue, oldValue, dirty;
+ angular.forEach(this.$$watchers, function(watcher) {
+ newValue = watcher.watchFn(self);
+ oldValue = watcher.last;
+ if (newValue !== oldValue) {
+ watcher.last = newValue;
+ watcher.listenerFn(newValue,
+ (oldValue === initWatchVal ? newValue : oldValue),self);
+ dirty = true;
+ }
+ });
+ return dirty;
+}
+
+var scope = new Scope();
+ scope.name = 'Jane';
+scope.$watch(
+ function(scope) { return scope.nameUpper; },
+ function(newValue, oldValue, scope) {
+ if (newValue) {
+ scope.initial = newValue.substring(0, 1) + '.';
+ }
+ }
+ );
+
+scope.$watch(
+ function(scope) { return scope.name; },
+ function(newValue, oldValue, scope) {
+ if (newValue) {
+ scope.nameUpper = newValue.toUpperCase();
+ }
+ }
+ );
+
+scope.$digest();
+</script>
+</body>
+</html>
