@@ -8841,7 +8841,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
             : compileNodes(childNodes,
                  nodeLinkFn ? (
                   (nodeLinkFn.transcludeOnThisElement || !nodeLinkFn.templateOnThisElement)
-                     && nodeLinkFn.transclude) : transcludeFn);
+                     && nodeLinkFn.transclude) : transcludeFn); //传入当前节点的transcludeFn给子节点用
 
         if (nodeLinkFn || childLinkFn) {
           linkFns.push(i, nodeLinkFn, childLinkFn); //放入linkFn数组
@@ -8893,6 +8893,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
               childScope = scope;
             }
 
+            //判断当前节点 指令的 transclude属性是否为true
             if (nodeLinkFn.transcludeOnThisElement) {
 
               //返回 boundTranscludeFn 方法
@@ -8909,6 +8910,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
               childBoundTranscludeFn = null;
             }
             //nodeLinkFn里调用childLinkFn
+            //childBoundTranscludeFn 传给 nodeLinkFn的 boundTranscludeFn参数
             nodeLinkFn(childLinkFn, childScope, node, $rootElement, childBoundTranscludeFn);
 
           } else if (childLinkFn) {
@@ -9189,6 +9191,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
      *                                        node
      * @returns {Function} linkFn
      */
+     //执行指令 compile编译函数
      //返回链接函数
     function applyDirectivesToNode(directives, compileNode, templateAttrs, transcludeFn,
                                    jqCollection, originalReplaceDirective, preLinkFns, postLinkFns,
@@ -9427,6 +9430,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           directiveValue = denormalizeTemplate(directiveValue);
 
           //在replace情况下 不能存在两个根节点
+          //替换掉指令本身自定义节点
           if (directive.replace) {
             replaceDirective = directive;
             if (jqLiteIsTextNode(directiveValue)) {
@@ -9471,6 +9475,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
             ii = directives.length;
           } else {
+            //不替换掉的话 如果是 transclude:'element' 那么还是 comment节点
             $compileNode.html(directiveValue);
           }
         }
@@ -9518,6 +9523,9 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
       //newScopeDirective 在 directive 的scope属性有的情况下 会赋值
       nodeLinkFn.scope = newScopeDirective && newScopeDirective.scope === true;
+
+      //如果指令没有transclude 或者 transclude为false
+      //那么hasTranscludeDirective就为false  line9303
       nodeLinkFn.transcludeOnThisElement = hasTranscludeDirective;//判断是否嵌入
       nodeLinkFn.templateOnThisElement = hasTemplate;//判断是否有模板
       nodeLinkFn.transclude = childTranscludeFn;
@@ -9553,6 +9561,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         }
       }
 
+      //节点链接函数
       function nodeLinkFn(childLinkFn, scope, linkNode, $rootElement, boundTranscludeFn) {
         var i, ii, linkFn, isolateScope, controllerScope, elementControllers, transcludeFn, $element,
             attrs, scopeBindingInfo;
@@ -9586,6 +9595,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         }
 
         //装载controller
+         //执行controller 改变scope
         if (controllerDirectives) {
           elementControllers = setupControllers($element, attrs, transcludeFn, controllerDirectives, isolateScope, scope, newIsolateScopeDirective);
         }
@@ -9686,12 +9696,22 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           scopeToChild = isolateScope;
         }
 
+        //1. 执行 controller 节点的 nodeLinkFn 
+        //2. 同时获取childLinkFn  也就是 子节点的 compositeLinkFn , 里面包含子节点的nodeLinkFn和 他的 子节点的compositeLinkFn
+        //3. 执行childLinkFn -> 回到compositeLinkFn 如果是transclude元素 那么 boundTranscludeFn 在compositeLinkFn函数中传入
+        //4. invokeLinkFn 函数 调用 加入的linkFn函数 就是ngTransclude指令中返回的函数(function ngTranscludePostLink($scope, $element, $attrs, controller, $transclude) )
+        //5. 执行ngTransclude中的函数  里面再执行transcludeFn函数 就是 controllersBoundTransclude
+        //6. controllersBoundTransclude 中再执行 boundTranscludeFn函数 
+        //7. cloneAttatchFn 为 ngTransclude内置指令中返回的函数
+
+        //linkNode.childNodes 获取子节点 供 compositeLinkFn使用
         //子节点的LinkFn 就是compositeLinkFn
         childLinkFn && childLinkFn(scopeToChild, linkNode.childNodes, undefined, boundTranscludeFn);
 
         // POSTLINKING
         for (i = postLinkFns.length - 1; i >= 0; i--) {
           linkFn = postLinkFns[i];
+           //把linkFn后面的参数依次传给LinkFn
           invokeLinkFn(linkFn,
               linkFn.isolateScope ? isolateScope : scope,
               $element,
@@ -9711,6 +9731,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
         // This is the function that is injected as `$transclude`.
         // Note: all arguments are optional!
+         //scope 有可能就是cloneAttachFn
         function controllersBoundTransclude(scope, cloneAttachFn, futureParentElement, slotName) {
           var transcludeControllers;
           // No scope passed in:

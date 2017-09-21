@@ -1,0 +1,35 @@
+<!DOCTYPE html>  
+<html lang="en" ng-app="testDirectiveTransclude">  
+<head>  
+    <meta charset="UTF-8">  
+    <title>测试Directive的transclude</title>  
+    <script src="../angular/angular.js"></script>  
+    <script src="transclude1.js"></script>  
+</head>  
+<body>  
+<h3>内容1:transclude的值是默认(false)</h3>  
+<transclude-def>  
+    <span>我是标签中的内容</span>  
+</transclude-def>  
+  
+<h3>内容2:transclude的值是true,有个span作为插入内容</h3>  
+<transclude-true>  
+    <span>我是标签中的内容</span>  
+</transclude-true>  
+  
+<h3>内容3:transclude的值是true，但没有插入内容</h3>  
+<transclude-true></transclude-true>  
+  
+<h3>内容4:transclude的值是obj，但没有插入内容</h3>  
+<transclude-multi-slot-point></transclude-multi-slot-point>  
+  
+<h3>内容5:transclude的值是obj，有插入内容;</h3>  
+<transclude-multi-slot-point>  
+    我是不用指定插入点名称的内容部分  
+    <multi-slot-point-tile>我是自定义的标题</multi-slot-point-tile>  
+    <multi-slot-point-content>我是自定义的内容</multi-slot-point-content>  
+    <multi-slot-point-footer>我是自定义的页脚</multi-slot-point-footer>  
+</transclude-multi-slot-point>  
+  
+</body>  
+</html> 

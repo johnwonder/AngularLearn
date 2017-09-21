@@ -31,7 +31,7 @@
 
         // transclude:true,
         transclude:'element',
-        replace:true,
+        //replace:true,  //不替换掉的话 如果是 transclude:'element' 那么还是 comment节点
         scope:{ name: '='},
         template:'<p ng-transclude></p>'
       }
