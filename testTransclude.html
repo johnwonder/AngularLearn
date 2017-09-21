@@ -7,22 +7,24 @@
 <body>
 	
 
-  <div ng-app="Demo" >sdsd
+  <div ng-app="Demo" ng-controller="testCtrl as ctrl">sdsd
     <!--   <div id="top" ng-click="ctrl.gotoBottom()">跳到底部</div>
       <div id="bottom" ng-click="ctrl.gotoTop()">跳到顶部</div>
 <input type="text" ng-model="name" /> -->
-      <div ng-controller="testCtrl as ctrl" my-transclude>
+      <div  my-transclude>
         <span>ss</span>
       </div>
       asdasd
-
-      <div ng-controller=""></div>
   </div>
 
 <script type="text/javascript">
 	
 	(function () {
     angular.module("Demo", [])
+    .config(['$compileProvider', function ($compileProvider) {
+    // disable debug info
+    //$compileProvider.debugInfoEnabled(false);
+    }])
     .directive("myTransclude",function(){
 
       return {
@@ -35,7 +37,7 @@
       }
 
     })
-    .controller("testCtrl",['$rootScope','$scope',"$location", "$anchorScroll",testCtrl])
+    .controller("testCtrl",['$rootScope','$compile','$scope',"$location", "$anchorScroll",testCtrl])
      .controller("secondController",['$rootScope','$scope',"$location", "$anchorScroll",secondController]);
     
     function secondController(scope,$scope,$location,$anchorScroll){
@@ -43,7 +45,9 @@
 
     }
 
-    function testCtrl(scope,$scope,$location,$anchorScroll){
+    function testCtrl(scope,compile,$scope,$location,$anchorScroll){
+
+      //compile.debugInfoEnabled(false);
       this.gotoTop = function () {
         $location.hash("top");
         // $anchorScroll();

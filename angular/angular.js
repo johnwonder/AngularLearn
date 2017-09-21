@@ -3097,9 +3097,11 @@ function jqLiteClone(element) {
   return element.cloneNode(true);
 }
 
+//onlyDescendants 后代
 function jqLiteDealoc(element, onlyDescendants) {
   if (!onlyDescendants) jqLiteRemoveData(element);
-
+  //https://github.com/JSFoundation/standards/issues/4
+  //querySelectorAll 在文档内找全部符合选择器描述的节点包括Element本身
   if (element.querySelectorAll) {
     var descendants = element.querySelectorAll('*');
     for (var i = 0, l = descendants.length; i < l; i++) {
@@ -3167,7 +3169,8 @@ function jqLiteRemoveData(element, name) {
   }
 }
 
-
+//扩展存储
+//存储到jqCache中去
 function jqLiteExpandoStore(element, createIfNecessary) {
   var expandoId = element.ng339,
       expandoStore = expandoId && jqCache[expandoId];
@@ -3180,13 +3183,15 @@ function jqLiteExpandoStore(element, createIfNecessary) {
   return expandoStore;
 }
 
-
+//实际的jqLite. data方法
+//放到子对象data里去
 function jqLiteData(element, key, value) {
   if (jqLiteAcceptsData(element)) {
 
     var isSimpleSetter = isDefined(value);
     var isSimpleGetter = !isSimpleSetter && key && !isObject(key);
     var massGetter = !key;
+    //最终是放到jqLiteCache里去的
     var expandoStore = jqLiteExpandoStore(element, !isSimpleGetter);
     var data = expandoStore && expandoStore.data;
 
@@ -3559,6 +3564,7 @@ forEach({
       }
     } else {
       // we are a write, so apply to all children
+      //赋值给所有子元素
       for (i = 0; i < nodeCount; i++) {
         fn(this[i], arg1, arg2);
       }
@@ -8650,6 +8656,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
     } : noop;
 
     compile.$$addScopeClass = debugInfoEnabled ? function $$addScopeClass($element, isolated) {
+      // 加了try catch svg排除
       safeAddClass($element, isolated ? 'ng-isolate-scope' : 'ng-scope');
     } : noop;
 
@@ -8690,10 +8697,14 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         }
       }
 
+      //compileNodes里 执行applyDirectivesToNode得到的nodeLinkFn 和 compilesNode得到的 childLinkFn
+      //然后 返回compositeLinkFn 方法 闭包里包含了 nodeLinkFn 和 childLinkFn
       var compositeLinkFn =
               compileNodes($compileNodes, transcludeFn, $compileNodes,
                            maxPriority, ignoreDirective, previousCompileContext);
       //添加 scope样式
+      //compileNodes里也会添加scope class 
+      //compileNodes里 会判断nodeLinkFn是不是 有scope属性
       compile.$$addScopeClass($compileNodes);
       var namespace = null;
       //publicLinkFn(scope)：传入$rootScope，执行publicLinkFn，完成整个页面的链接工作
@@ -8803,6 +8814,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
         //收集指令
         // we must always refer to nodeList[i] since the nodes can be replaced underneath us.
+        //有可能被transclude替换
         directives = collectDirectives(nodeList[i], [], attrs, i === 0 ? maxPriority : undefined,
                                         ignoreDirective);
 
@@ -8814,6 +8826,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
             : null;
 
         if (nodeLinkFn && nodeLinkFn.scope) {
+          //attrs.$$element 在 nodelinkFn 函数开始处定义
+          //加上ng-scope class
           compile.$$addScopeClass(attrs.$$element);
         }
 
@@ -8870,6 +8884,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           childLinkFn = linkFns[i++];
 
           if (nodeLinkFn) {
+            //如果nodeLinkFn 的scope 为true的情况下
+            //scope属性是在 有newScopeDirective 并且newScopeDirective.scope为 true的情况下
             if (nodeLinkFn.scope) {
               childScope = scope.$new();
               compile.$$addScopeInfo(jqLite(node), childScope);
@@ -9233,6 +9249,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
               //判断是否已经存在scope了
 
               //比如 ng-controller指令 和 另外一个有独立作用域的指令在一个节点上那么就会报错了
+              //因为 newScopeDirective 就是ngController指令
               assertNoDuplicate('new/isolated scope', newIsolateScopeDirective || newScopeDirective,
                                 directive, $compileNode);
               newIsolateScopeDirective = directive;
@@ -9272,6 +9289,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         }
 
         //如果不存在templateUrl 且存在controller
+        //https://toddmotto.com/no-scope-soup-bind-to-controller-angularjs/
         if (!directive.templateUrl && directive.controller) {
           directiveValue = directive.controller;
           controllerDirectives = controllerDirectives || createMap();
@@ -9279,12 +9297,13 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
               controllerDirectives[directiveName], directive, $compileNode);
           controllerDirectives[directiveName] = directive;
         }
-
+        //http://blog.csdn.net/liyanq528/article/details/53782279
         //判断是否存在嵌套
         if (directiveValue = directive.transclude) {
           hasTranscludeDirective = true;
 
-          // Special case ngIf and ngRepeat so that we don't complain about(申诉) duplicate（多个） transclusion.
+          //ngif 和ngRepeat 是加了 $$tlb属性的
+          // Special case（特殊） ngIf and ngRepeat so that we don't complain about(申诉) duplicate（多个） transclusion.
           // This option should only be used by directives that know how to safely handle element transclusion,
           // where the transcluded nodes are added or replaced after linking.
           if (!directive.$$tlb) {
@@ -9497,6 +9516,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
       }
 
+      //newScopeDirective 在 directive 的scope属性有的情况下 会赋值
       nodeLinkFn.scope = newScopeDirective && newScopeDirective.scope === true;
       nodeLinkFn.transcludeOnThisElement = hasTranscludeDirective;//判断是否嵌入
       nodeLinkFn.templateOnThisElement = hasTemplate;//判断是否有模板
@@ -9565,7 +9585,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           };
         }
 
-        //z
+        //装载controller
         if (controllerDirectives) {
           elementControllers = setupControllers($element, attrs, transcludeFn, controllerDirectives, isolateScope, scope, newIsolateScopeDirective);
         }
@@ -17204,9 +17224,10 @@ function $RootScopeProvider() {
       this.$$listeners = {};
       this.$$listenerCount = {};
       this.$$watchersCount = 0;
-      this.$id = nextUid();
+      this.$id = nextUid(); //++uid 1 开始
       this.$$ChildScope = null;
     }
+    //这样就可以用parent的属性了
     ChildScope.prototype = parent;
     return ChildScope;
   }
@@ -17267,7 +17288,7 @@ function $RootScopeProvider() {
          expect(parent.salutation).toEqual('Hello');
      * ```
      *
-     * When interacting with `Scope` in tests, additional helper methods are available on the
+     * When interacting with（与…相互作用） `Scope` in tests, additional helper methods are available on the
      * instances of `Scope` type. See {@link ngMock.$rootScope.Scope ngMock Scope} for additional
      * details.
      *
@@ -17361,11 +17382,14 @@ function $RootScopeProvider() {
           // Only create a child scope class if somebody asks for one,
           // but cache it to allow the VM to optimize lookups.
           if (!this.$$ChildScope) {
+            //定义ChildScope方法
             this.$$ChildScope = createChildScopeClass(this);
           }
-          child = new this.$$ChildScope();
+          child = new this.$$ChildScope(); //实例化一下
         }
         child.$parent = parent;
+
+        //在这边引用了 parent.$$childTail 这样的话parent.$$childTail就不会丢失了
         child.$$prevSibling = parent.$$childTail;
         if (parent.$$childHead) {
           parent.$$childTail.$$nextSibling = child;
