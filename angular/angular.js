@@ -8030,6 +8030,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
                 if (isFunction(directive)) {
                   directive = { compile: valueFn(directive) };
                 } else if (!directive.compile && directive.link) {
+                  //没有compile函数 且 有link函数
                   directive.compile = valueFn(directive.link);
                 }
                 directive.priority = directive.priority || 0;
@@ -8692,6 +8693,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         //NODE_TYPE_TEXT == 3 代表元素或属性中的文本内容
         // 对于文本节点，使用<span>包装
         //并且值不为空的
+
+        //这边如果指令 是元素指令  那么 就会用 span来代替 
         if (domNode.nodeType === NODE_TYPE_TEXT && domNode.nodeValue.match(NOT_EMPTY) /* non-empty */) {
           jqLiteWrapNode(domNode, $compileNodes[i] = window.document.createElement('span'));
         }
@@ -8802,6 +8805,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
      */
      /*
        匹配nodeList的每个节点
+       http://blog.csdn.net/zhujf21st/article/details/78043239 编译链接过程
      */
     function compileNodes(nodeList, transcludeFn, $rootElement, maxPriority, ignoreDirective,
                             previousCompileContext) {
@@ -8831,9 +8835,15 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           compile.$$addScopeClass(attrs.$$element);
         }
 
+          //在用replace属性 替换原来节点后 这边的childNodes就有可能是 template模板中的子节点了
+          //这块在 ngtTransclude时比较重要
+
           //编译子节点
           //nodeList[i].childNodes 包含节点之间的文本
           //返回的LinkFn也就是compoisteLinkFn
+
+          //子节点的 childLinkFn 就是 compositeLinkFn 
+          //里面包含了所有子节点的compositeLinkFn
         childLinkFn = (nodeLinkFn && nodeLinkFn.terminal ||
                       !(childNodes = nodeList[i].childNodes) ||
                       !childNodes.length)
@@ -8897,10 +8907,14 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
             if (nodeLinkFn.transcludeOnThisElement) {
 
               //返回 boundTranscludeFn 方法
+
+              //nodeLinkFn.transclude 就是节点的lazycompliation方法
               childBoundTranscludeFn = createBoundTranscludeFn(
                   scope, nodeLinkFn.transclude, parentBoundTranscludeFn);
 
             } else if (!nodeLinkFn.templateOnThisElement && parentBoundTranscludeFn) {
+
+              //指令为slot的时候 childBoundTransclude 通常直接为 parentBoundTranscludeFn
               childBoundTranscludeFn = parentBoundTranscludeFn;
 
             } else if (!parentBoundTranscludeFn && transcludeFn) {
@@ -8921,6 +8935,10 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
     }
 
     //transcludeFn 有可能是directive的transclude方法
+
+    //调用ngTransclude内置指令compile返回的方法
+    //方法里调用controllersTranscludeFn方法
+    //再调用boundTranscludeFn
     function createBoundTranscludeFn(scope, transcludeFn, previousBoundTranscludeFn) {
       function boundTranscludeFn(transcludedScope, cloneFn, controllers, futureParentElement, containingScope) {
 
@@ -8928,7 +8946,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           transcludedScope = scope.$new(false, containingScope);
           transcludedScope.$$transcluded = true;
         }
-
+          //调用boundTranscludeFn把 cloneFn传递进来了
+          //再调用 publicLinkFn传递
         return transcludeFn(transcludedScope, cloneFn, {
           parentBoundTranscludeFn: previousBoundTranscludeFn,
           transcludeControllers: controllers,
@@ -8941,6 +8960,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       var boundSlots = boundTranscludeFn.$$slots = createMap();
       for (var slotName in transcludeFn.$$slots) {
         if (transcludeFn.$$slots[slotName]) {
+          //transcludeFn.$$slots[slotName] 就是 lazyCompilation
+          //把 lazyCompilation放入 
           boundSlots[slotName] = createBoundTranscludeFn(scope, transcludeFn.$$slots[slotName], previousBoundTranscludeFn);
         } else {
           boundSlots[slotName] = null;
@@ -9291,7 +9312,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
                 didScanForMultipleTransclusion = true;
         }
 
-        //如果不存在templateUrl 且存在controller
+        //如果不存在templateUrl 且存在controller属性
         //https://toddmotto.com/no-scope-soup-bind-to-controller-angularjs/
         if (!directive.templateUrl && directive.controller) {
           directiveValue = directive.controller;
@@ -9422,6 +9443,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           assertNoDuplicate('template', templateDirective, directive, $compileNode);
           templateDirective = directive;
 
+          //如果template不是function 那么直接用template的值  
           directiveValue = (isFunction(directive.template))
               ? directive.template($compileNode, templateAttrs)
               : directive.template;
@@ -9476,6 +9498,9 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
             ii = directives.length;
           } else {
             //不替换掉的话 如果是 transclude:'element' 那么还是 comment节点
+            
+            //不替换掉的话 就把directive.template当作子节点
+            //然后在compileNodes  获取childLinkFn -> compileNodes时  也是新的子节点了
             $compileNode.html(directiveValue);
           }
         }
@@ -9502,11 +9527,12 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           ii = directives.length;
         } else if (directive.compile) {
           try {
+            //http://www.cnblogs.com/GoodPingGe/p/4361354.html
             linkFn = directive.compile($compileNode, templateAttrs, childTranscludeFn);
             var context = directive.$$originalDirective || directive;
             if (isFunction(linkFn)) {
               addLinkFns(null, bind(context, linkFn), attrStart, attrEnd);
-            } else if (linkFn) {
+            } else if (linkFn) {//应该是对象
               addLinkFns(bind(context, linkFn.pre), bind(context, linkFn.post), attrStart, attrEnd);
             }
           } catch (e) {
@@ -9528,7 +9554,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       //那么hasTranscludeDirective就为false  line9303
       nodeLinkFn.transcludeOnThisElement = hasTranscludeDirective;//判断是否嵌入
       nodeLinkFn.templateOnThisElement = hasTemplate;//判断是否有模板
-      nodeLinkFn.transclude = childTranscludeFn;
+      nodeLinkFn.transclude = childTranscludeFn; //$$slots 附加在childTranscludeFn上
 
       previousCompileContext.hasElementTranscludeDirective = hasElementTranscludeDirective;
 
@@ -9596,6 +9622,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
         //装载controller
          //执行controller 改变scope
+         //节点的指令中有定义 controller属性
         if (controllerDirectives) {
           elementControllers = setupControllers($element, attrs, transcludeFn, controllerDirectives, isolateScope, scope, newIsolateScopeDirective);
         }
@@ -9753,6 +9780,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
             //  * a transclude function - a filled slot
             //  * `null` - an optional slot that was not filled
             //  * `undefined` - a slot that was not declared (i.e. invalid)
+            ////在父指令中 不定义 该slotName 会报 
             var slotTranscludeFn = boundTranscludeFn.$$slots[slotName];
             if (slotTranscludeFn) {
               return slotTranscludeFn(scope, cloneAttachFn, transcludeControllers, futureParentElement, scopeToChild);
@@ -9822,10 +9850,10 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           $element: $element,
           $attrs: attrs,
           $transclude: transcludeFn
-        };
+        };//注入参数而已
 
-        var controller = directive.controller;
-        if (controller == '@') {
+        var controller = directive.controller; 
+        if (controller == '@') { //元素定义的controller属性
           controller = attrs[directive.name];//ngController
         }
 
@@ -31111,6 +31139,10 @@ var ngSwitchDefaultDirective = ngDirective({
  *      });
  *   </file>
  * </example>
+ 当 Angular 从 HTML 中解析 directive 的时候，我们每个 directive 的解析可以大致分为 3 步。
+
+initialization ：这个阶段是 Angular 在 DOM 遍历的时候第一次发现 directive 的时候执行。（它只会发生一次，即便是在 DOM 中出现了多次）initialization 允许 directive 做一些初始化的工作。
+compilation ：这个阶段 Angular 遍历 DOM ，并且收集所有的 directive 。所有 directive 都可以在这个阶段操作 DOM（在这个阶段，同一个 directive 在不同的 DOM 节点如果中出现了多次，compilation 将会执行多次）这个阶段 scope 是还没有被附加上去，所以是无法访问到 scope 的。
  */
 var ngTranscludeMinErr = minErr('ngTransclude');
 var ngTranscludeDirective = ['$compile', function($compile) {
