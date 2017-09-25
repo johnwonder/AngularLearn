@@ -6586,6 +6586,7 @@ function $CacheFactoryProvider() {
       }
 
       var size = 0,
+          //把options 和{id:cacheId} 放入{} 中 不是深拷贝
           stats = extend({}, options, {id: cacheId}),
           data = createMap(),
           capacity = (options && options.capacity) || Number.MAX_VALUE,
@@ -6663,8 +6664,9 @@ function $CacheFactoryProvider() {
           if (!(key in data)) size++;
           data[key] = value;
 
+          //当大于capacity时 会清楚最早加入的那个
           if (size > capacity) {
-            this.remove(staleEnd.key);
+            this.remove(staleEnd.key);//移除淘汰节点
           }
 
           return value;
@@ -6711,7 +6713,7 @@ function $CacheFactoryProvider() {
             if (!lruEntry) return;
 
             if (lruEntry == freshEnd) freshEnd = lruEntry.p;
-            if (lruEntry == staleEnd) staleEnd = lruEntry.n;
+            if (lruEntry == staleEnd) staleEnd = lruEntry.n;//把淘汰节点的一个节点选中
             link(lruEntry.n,lruEntry.p);
 
             delete lruHash[key];
@@ -6774,6 +6776,7 @@ function $CacheFactoryProvider() {
          *   </ul>
          */
         info: function() {
+          //把stats 中的 属性和 size 放入{}中
           return extend({}, stats, {size: size});
         }
       };
@@ -6787,11 +6790,11 @@ function $CacheFactoryProvider() {
           if (!staleEnd) {
             staleEnd = entry;
           } else if (staleEnd == entry) {
-            staleEnd = entry.n;
+            staleEnd = entry.n; //用于把 当前的下一个节点 用作淘汰节点
           }
 
-          link(entry.n, entry.p);
-          link(entry, freshEnd);
+          link(entry.n, entry.p); //当前的上一个节点 和当前的下一个节点
+          link(entry, freshEnd); // 当前的节点 和 最新的末尾节点
           freshEnd = entry;
           freshEnd.n = null;
         }
@@ -6799,7 +6802,7 @@ function $CacheFactoryProvider() {
 
 
       /**
-       * bidirectionally links two entries of the LRU linked list
+       * bidirectionally(双向链表) links two entries of the LRU linked list
        */
       function link(nextEntry, prevEntry) {
         if (nextEntry != prevEntry) {
@@ -6819,6 +6822,7 @@ function $CacheFactoryProvider() {
    *
    * @returns {Object} - key-value map of `cacheId` to the result of calling `cache#info`
    */
+   //所有的缓存
     cacheFactory.info = function() {
       var info = {};
       forEach(caches, function(cache, cacheId) {
@@ -8876,10 +8880,11 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         var nodeLinkFn, childLinkFn, node, childScope, i, ii, idx, childBoundTranscludeFn;
         var stableNodeList;
 
-
+        //如果在节点上找到LinkFn 那么就只需要有LinkFn的节点去执行
         if (nodeLinkFnFound) {
           // copy nodeList so that if a nodeLinkFn removes or adds an element at this DOM level our
           // offsets don't get screwed up
+          //同级添加和修改不会影响
           var nodeListLength = nodeList.length;
           stableNodeList = new Array(nodeListLength);
 
@@ -8922,6 +8927,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
               childBoundTranscludeFn = parentBoundTranscludeFn;
 
             } else if (!parentBoundTranscludeFn && transcludeFn) {
+
+              //优先会使用parentBoundTranscludeFn
               childBoundTranscludeFn = createBoundTranscludeFn(scope, transcludeFn);
 
             } else {
@@ -31249,6 +31256,7 @@ var ngTranscludeDirective = ['$compile', function($compile) {
     </file>
   </example>
  */
+ //http://www.cnblogs.com/whitewolf/p/3601990.html
 var scriptDirective = ['$templateCache', function($templateCache) {
   return {
     restrict: 'E',

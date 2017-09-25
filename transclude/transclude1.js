@@ -50,7 +50,7 @@ app.directive("transcludeMultiSlotPoint", function () {
     dir.replace = false;//看的容易 //不替换也可以 
     dir.restrict = "E";  
     dir.transclude = {  
-        //title: "?multiSlotPointTile",         
+        title: "?multiSlotPointTile",         
         content: "?multiSlotPointContent",  
         footer: "?multiSlotPointFooter"  
     };  
