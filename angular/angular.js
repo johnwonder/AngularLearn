@@ -487,8 +487,9 @@ function toInt(str) {
   return parseInt(str, 10);
 }
 
-
+//https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/create
 function inherit(parent, extra) {
+  //Object.create() 方法会使用指定的原型对象及其属性去创建一个新的对象
   return extend(Object.create(parent), extra);
 }
 
@@ -2614,6 +2615,7 @@ function toDebugString(obj) {
  * - `dot` – `{number}` – Dot version number, such as "18".
  * - `codeName` – `{string}` – Code name of the release, such as "jiggling-armfat".
  */
+ //可以通过grunt package task 替换
 var version = {
   full: '1.5.8',    // all of these placeholder strings will be replaced by grunt's
   major: 1,    // package task
@@ -2838,7 +2840,7 @@ function publishExternalAPI(angular) {
  * - [`bind()`](http://api.jquery.com/bind/) - Does not support namespaces, selectors or eventData
  * - [`children()`](http://api.jquery.com/children/) - Does not support selectors
  * - [`clone()`](http://api.jquery.com/clone/)
- * - [`contents()`](http://api.jquery.com/contents/)
+ * - [`contents()`](http://api.jquery.com/contents/) //Get the children of each element in the set of matched elements, including text and comment nodes.
  * - [`css()`](http://api.jquery.com/css/) - Only retrieves inline-styles, does not call `getComputedStyle()`.
  *   As a setter, does not convert numbers to strings or append 'px', and also does not have automatic property prefixing.
  * - [`data()`](http://api.jquery.com/data/)
@@ -3734,6 +3736,7 @@ forEach({
   },
 
   contents: function(element) {
+    //contentDocument  iframe
     return element.contentDocument || element.childNodes || [];
   },
 
@@ -3864,6 +3867,7 @@ forEach({
           value = jqLite(value);
         }
       } else {
+        //value 已经是包装过的 jqLite对象 只是把fn返回的结果再加入这个jqLite对象
         jqLiteAddNodes(value, fn(this[i], arg1, arg2, arg3));
       }
     }
@@ -9164,6 +9168,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           // since this is a potentially long lived closure
           $compileNodes = transcludeFn = previousCompileContext = null;
         }
+        //执行publickLinkFn
         return compiled.apply(this, arguments);
       };
     }
@@ -9353,6 +9358,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
             var slots = createMap();
 
+            //compileNode不是jqLite对象 html节点
             $template = jqLite(jqLiteClone(compileNode)).contents();
 
             if (isObject(directiveValue)) {
@@ -9365,6 +9371,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
               var filledSlots = createMap();
 
               // Parse the element selectors
+              //foreach 为 value  key
               forEach(directiveValue, function(elementSelector, slotName) {
                 // If an element selector starts with a ? then it is optional
                 var optional = (elementSelector.charAt(0) === '?');
@@ -9383,8 +9390,12 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
               });
 
               // Add the matching elements into their slot
+              //把符合的元素添加进他们的slot(狭槽)
+
+              //$compileNode 可能包含多个节点
               forEach($compileNode.contents(), function(node) {
                 var slotName = slotMap[directiveNormalize(nodeName_(node))];
+                //如果映射里有这个slot
                 if (slotName) {
                   filledSlots[slotName] = true;
                   slots[slotName] = slots[slotName] || [];
@@ -9395,6 +9406,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
               });
 
               // Check for required slots that were not filled
+              //如果optional 为false 且 filledSlotes[slotName] 为false
               forEach(filledSlots, function(filled, slotName) {
                 if (!filled) {
                   throw $compileMinErr('reqslot', 'Required transclusion slot `{0}` was not filled.', slotName);
@@ -9404,6 +9416,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
               for (var slotName in slots) {
                 if (slots[slotName]) {
                   // Only define a transclusion function if the slot was filled
+                  //compilationGenerator返回的是一个函数
                   slots[slotName] = compilationGenerator(mightHaveMultipleTransclusionError, slots[slotName], transcludeFn);
                 }
               }
