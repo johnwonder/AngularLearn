@@ -1,0 +1,429 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"funcn",
+				"function"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "angular.js",
+			"settings":
+			{
+				"buffer_size": 1205428,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/zhangjiong/code/AngularLearn/transclude/directiveTransclude.html",
+			"settings":
+			{
+				"buffer_size": 689,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/zhangjiong/code/AngularLearn/transclude/transclude1.js",
+			"settings":
+			{
+				"buffer_size": 2438,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/Users/zhangjiong/code/AngularLearn"
+	],
+	"file_history":
+	[
+		"/Users/zhangjiong/Downloads/build.xml",
+		"/Users/zhangjiong/code/helloworld/helloworld/ViewController.h",
+		"/Users/zhangjiong/code/angularRead/angular/testTransclude.html"
+	],
+	"find":
+	{
+		"height": 37.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"applyDirectivesToNode",
+			"ngTransclude",
+			"collectDirectives",
+			"applyDirectivesToNode",
+			"addDirective",
+			"collectDirectives",
+			"ngTransclude",
+			"applyDirectivesToNode",
+			"hasDirectives",
+			"applyDirectivesToNode",
+			"ngTransclude",
+			"slots",
+			"compileNodes",
+			"applyDirectivesToNode",
+			"ngTransclude",
+			"applyDirectivesToNode",
+			"ngTransclude",
+			"applyDirectivesToNode",
+			"collectDirectives",
+			"ngTransclude",
+			"addDirective",
+			"collectDirectives",
+			"applyDirectivesToNode",
+			"hasDirectives",
+			"ngTranscludeDirective",
+			"transcludeControllers",
+			"ngTransclude",
+			"transcludeControllers",
+			"transcludeFn",
+			"pre:",
+			"pre",
+			"transcludeFn",
+			"setupControllers",
+			"preLink",
+			"addLinkFns",
+			"preLinkFns",
+			"setupControllers",
+			"createInjector",
+			"controllerProvider",
+			"setupControllers",
+			"$transclude",
+			"setupControllers",
+			"controllerProvider",
+			"setupControllers",
+			"applyDirectives",
+			"$transclude",
+			"compile(",
+			"compile",
+			"compilationGenerator",
+			"$compile",
+			"compilationGenerator",
+			"$transclude",
+			"$ngTransclude",
+			"applyDirectivesToNode",
+			"$$boundTransclude",
+			"controllersBoundTransclude",
+			"applyDirectivesToNode",
+			"ngTransclude",
+			"applyDirectivesToNode",
+			"ngTransclude",
+			"applyDirectivesToNode",
+			"ngTransclude",
+			"applyDirectivesToNode",
+			"ngTransclude",
+			"applyDirectivesToNode",
+			"transcludeFn",
+			"applyDirectivesToNode",
+			"hasTranscludeDirective",
+			"applyDirectivesToNode",
+			"nonTlbTranscludeDirective",
+			"nodeLinkFn",
+			"applyDirectivesToNode",
+			"newIsolateScopeDirective",
+			"mergeTemplateAttributes",
+			"replaceWith",
+			"applyDirectivesToNode",
+			"compileNode",
+			"applyDirectivesToNode",
+			"$element",
+			"controllersBoundTransclude",
+			"compilationGenerator",
+			"applyDirectivesToNode",
+			"controllersBoundTransclude",
+			"ngTransclude",
+			"controllersBoundTransclude",
+			"ngTransclude",
+			"controllersBoundTransclude",
+			"applyDirectivesToNode",
+			"ngTransclude",
+			"boundTransclude",
+			"$$boundTransclude",
+			"controllersBoundTransclude",
+			"applyDirectivesToNode",
+			"controllersBoundTransclude",
+			"applyDirectivesToNode",
+			"createBoundTranscludeFn",
+			"wrapTemplate",
+			"applyDirectivesToNode",
+			"compileNode",
+			"element",
+			"templateAttrs",
+			"mergetemplate",
+			"SIMPLE_ATTR_NAME",
+			"Attributes",
+			"applyDirectivesToNode",
+			"ngTransclude",
+			"applyDirectivesToNode",
+			"childTranscludeFn",
+			"transcludeOnThisElement",
+			"applyDirectivesToNode",
+			"transcludeOnThisElement",
+			"transcludeFn",
+			"templateOnThisElement",
+			"hasTranscludeDirective",
+			"transcludeOnThisElement",
+			"createBoundTranscludeFn",
+			"applyDirectivesToNode",
+			"compositeLinkFn",
+			"publicLinkFn",
+			"applyDirectivesToNode",
+			"boundTranscludeFn",
+			"transcludeFn",
+			"invokeLinkFn",
+			"applyDirectivesToNode",
+			"ngTrans",
+			"invokeLinkFn",
+			"postLinkFns",
+			"applyDirectivesToNode"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": true,
+		"wrap": true
+	},
+	"folders":
+	[
+		{
+			"path": "/Users/zhangjiong/code/AngularLearn"
+		}
+	],
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "angular.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1205428,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								321030,
+								321030
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 187891.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "/Users/zhangjiong/code/AngularLearn/transclude/directiveTransclude.html",
+					"semi_transient": true,
+					"settings":
+					{
+						"buffer_size": 689,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								119,
+								141
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "/Users/zhangjiong/code/AngularLearn/transclude/transclude1.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2438,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1186,
+								1186
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 721.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 29.0
+	},
+	"input":
+	{
+		"height": 37.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "",
+	"replace":
+	{
+		"height": 54.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"",
+				"~/code/AngularLearn/angular/angular.sublime-workspace"
+			]
+		],
+		"width": 380.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 308.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

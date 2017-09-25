@@ -18,7 +18,33 @@ http://blog.csdn.net/liyanq528/article/details/53782279
 var app = angular.module("testDirectiveTransclude", []);  
   
 
-  app.directive("transcludedef", function () {  
+//   .directive("transcludeDef", function () {  
+//     var dir = [];  
+//     dir.replace = true;//看的容易 // 替换掉当前指令节点 如果为false 那么保留指令自定义节点
+//     dir.restrict = "E";  
+
+//     //transclude false的时候。模板中不能有ngTransclude 除非有parent
+//     dir.transclude = false;//默认值  //这里导致没有childTranscludeFn函数传入
+//     dir.template = "<div>" +  
+//         "<div>我是模版中的内容</div>" +  
+//         //"<div ng-transclude>我是模版中的插入点</div>" +//不可以这样写，虽然效果一样，但控制台有错误。  
+//         "<div>我是模版中的插入点</div>" +  
+//         "</div>";  
+//     return dir;  
+// }).directive("transcludeTrue", function () {  
+//     var dir = [];  
+//     dir.replace = true;//看的容易  
+//     dir.restrict = "E";  
+//     dir.transclude = true;  
+//     dir.template = "<div>" +  
+//         "<div>我是模版中的内容</div>" +  
+//         "<div ng-transclude>我是模版中的插入点</div>" +  
+//         "<ng-transclude>我是模版中的插入点</ng-transclude>" +  
+//         "</div>";  
+//     return dir;  
+// })
+
+  app.directive("transcludeDef", function () {  
     var dir = [];  
     //dir.replace = true;//看的容易 // 替换掉当前指令节点 如果为false 那么保留指令自定义节点
     dir.restrict = "E";  
@@ -33,34 +59,26 @@ var app = angular.module("testDirectiveTransclude", []);
     return dir;  
 });
 
-//app.directive("transcludeTrue", function () {  
-//     var dir = [];  
-//     dir.replace = true;//看的容易  
-//     dir.restrict = "E";  
-//     dir.transclude = true;  
-//     dir.template = "<div>" +  
-//         "<div>我是模版中的内容</div>" +  
-//         "<div ng-transclude>我是模版中的插入点</div>" +  
-//         "<ng-transclude>我是模版中的插入点</ng-transclude>" +  
-//         "</div>";  
-//     return dir;  
-// })
 app.directive("transcludeMultiSlotPoint", function () {  
     var dir = [];  
     dir.replace = false;//看的容易 //不替换也可以 
     dir.restrict = "E";  
-    dir.transclude = {  
-        //title: "?multiSlotPointTile",         
-        content: "?multiSlotPointContent",  
-        footer: "?multiSlotPointFooter"  
-    };  
-    dir.template = "<div>" +  
-        "<div>我是模版中的内容</div>" +  //重复属性没用
-        "<div ng-transclude='title' ng-transclude='footer'>我是模版中的插入点的标题</div>" +  
-        //搞错了 ，ng-transclude不会使hasTranscludeDirective为true 反而因为有compile方法 ，导致会加入postLinkFn 最终执行的事postLinkFn
-        "<div ng-transclude='content'>我是模版中的插入点的内容</div>" +  
-        "<div class='ng-transclude:footer'>我是模版中的插入点页脚</div>" +  
-        "<div ng-transclude>我是模版中的默认插入点的内容</div>" +  
-        "</div>";  
+    dir.transclude = true;
     return dir;  
 });
+
+
+app.directive("transcludeTest", function () {  
+    var dir = [];  
+    dir.replace = false;//看的容易 //不替换也可以 
+    dir.restrict = "A";  
+    dir.compile  = function ngTranscludeCompile(tElement) {
+
+        return function ngTranscludePostLink($scope, $element, $attrs, controller, $transclude) {
+
+            console.log($transclude);
+        }
+    }
+    return dir;  
+});
+
