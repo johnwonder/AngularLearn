@@ -11,8 +11,9 @@
     <!--   <div id="top" ng-click="ctrl.gotoBottom()">跳到底部</div>
       <div id="bottom" ng-click="ctrl.gotoTop()">跳到顶部</div>
 <input type="text" ng-model="name" /> -->
-      <div  my-transclude>
-        <span>ss</span>
+      <div  my-transclude> 
+      <!-- -->
+        <span my-transclude>ss</span>
       </div>
       asdasd
   </div>
@@ -29,9 +30,9 @@
 
       return {
 
-        // transclude:true,
-        transclude:'element',
-        //replace:true,  //不替换掉的话 如果是 transclude:'element' 那么还是 comment节点
+        transclude:true,  //没有transclude 但是template中有ng-transclude指令 那么会报错
+        //transclude:'element',
+        replace:true,  //不替换掉的话 如果是 transclude:'element' 那么还是 comment节点
         scope:{ name: '='},
         template:'<p ng-transclude></p>'
       }

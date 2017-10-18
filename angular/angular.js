@@ -7828,12 +7828,12 @@ function $TemplateCacheProvider() {
  *   ```
  *
  * - if on the other hand, you need the element to be cloned, the view reference from the original
- *   example would not point to the clone, but rather to the original template that was cloned. In
+ *   example would not point to the clone, but rather to(而是) the original template that was cloned. In
  *   this case, you can access the clone via the cloneAttachFn:
  *   ```js
  *     var templateElement = angular.element('<p>{{total}}</p>'),
  *         scope = ....;
- *
+ *    //代码里判断了是否有cloneAttachFn函数
  *     var clonedElement = $compile(templateElement)(scope, function(clonedElement, scope) {
  *       //attach the clone to DOM document at the right place
  *     });
@@ -8041,7 +8041,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
                   //没有compile函数 且 有link函数
                   directive.compile = valueFn(directive.link);
                 }
-                directive.priority = directive.priority || 0;
+                directive.priority = directive.priority || 0; //默认是 0
                 directive.index = index;
                 directive.name = directive.name || name;
                 directive.require = getDirectiveRequire(directive);
@@ -8765,6 +8765,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           //jqLiteClone
           //JQLitePrototype 等于 JQLite.prototype
           $linkNode = JQLitePrototype.clone.call($compileNodes);
+           //$linkNode = $compileNodes;
         } else {
           $linkNode = $compileNodes;
         }
@@ -8779,6 +8780,11 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
         if (cloneConnectFn) cloneConnectFn($linkNode, scope);
 
+       // <div  my-transclude> 
+       //      <!-- -->
+       //        <span my-transclude>ss</span>
+       //      </div>
+       //此种情况 因为存在div 被克隆的情况  所以 到nodeLinkFn的时候 compileNode和linkNode是不一样的
         //执行LinkFn
         if (compositeLinkFn) compositeLinkFn(scope, $linkNode, $linkNode, parentBoundTranscludeFn);
         return $linkNode;
@@ -8875,6 +8881,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       //否则就返回null
       // return a linking function if we have found anything, null otherwise
       return linkFnFound ? compositeLinkFn : null;
+
 
       function compositeLinkFn(scope, nodeList, $rootElement, parentBoundTranscludeFn) {
         var nodeLinkFn, childLinkFn, node, childScope, i, ii, idx, childBoundTranscludeFn;
@@ -9190,6 +9197,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       }
       return function lazyCompilation() {
         if (!compiled) {
+          //这里的 有可能会导致 nodeLinkFn 里的 LinkNode和 compileNode不一样
           compiled = compile($compileNodes, transcludeFn, maxPriority, ignoreDirective, previousCompileContext);
 
           // Null out all of these references in order to make them eligible for garbage collection
@@ -9608,6 +9616,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       }
 
       //节点链接函数
+
       function nodeLinkFn(childLinkFn, scope, linkNode, $rootElement, boundTranscludeFn) {
         var i, ii, linkFn, isolateScope, controllerScope, elementControllers, transcludeFn, $element,
             attrs, scopeBindingInfo;
@@ -9616,7 +9625,13 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           attrs = templateAttrs;
           $element = templateAttrs.$$element;
         } else {
+            // <div  my-transclude> 
+           //      <!-- -->
+           //        <span my-transclude>ss</span>
+           //      </div>
+           //此种情况 因为存在div 被克隆的情况  所以 到nodeLinkFn的时候 compileNode和linkNode是不一样的
           $element = jqLite(linkNode);
+          //templateAttrs复制到attrs对象里
           attrs = new Attributes($element, templateAttrs);
         }
 
@@ -9644,6 +9659,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
          //执行controller 改变scope
          //节点的指令中有定义 controller属性
         if (controllerDirectives) {
+          //attrs  templateAttrs  new Attributes
           elementControllers = setupControllers($element, attrs, transcludeFn, controllerDirectives, isolateScope, scope, newIsolateScopeDirective);
         }
 
@@ -9931,6 +9947,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
             i = 0, ii = directives.length; i < ii; i++) {
           try {
             directive = directives[i];
+            //这边挺重要的 maxPriority 为undefined maxPriority 等于 directive.priority 就不加这个directive了
             if ((isUndefined(maxPriority) || maxPriority > directive.priority) &&
                  directive.restrict.indexOf(location) != -1) {
               if (startAttrName) {

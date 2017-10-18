@@ -46,7 +46,7 @@ var app = angular.module("testDirectiveTransclude", []);
 
   app.directive("transcludeDef", function () {  
     var dir = [];  
-    //dir.replace = true;//看的容易 // 替换掉当前指令节点 如果为false 那么保留指令自定义节点
+    dir.replace = true;//看的容易 // 替换掉当前指令节点 如果为false 那么保留指令自定义节点
     dir.restrict = "E";  
 
     //transclude false的时候。模板中不能有ngTransclude 除非有parent
