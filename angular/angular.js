@@ -350,7 +350,8 @@ function forEach(obj, iterator, context) {
   }
   return obj;
 }
-
+//根据obj的 key来排序
+//内部方法
 function forEachSorted(obj, iterator, context) {
   var keys = Object.keys(obj).sort();
   for (var i = 0; i < keys.length; i++) {
@@ -1700,6 +1701,7 @@ function angularInit(element, bootstrap) {
       module = candidate.getAttribute(name);
     }
   });
+  
   if (appElement) {
     config.strictDi = getNgAttribute(appElement, "strict-di") !== null;
     bootstrap(appElement, module ? [module] : [], config);
@@ -3282,9 +3284,13 @@ function jqLiteController(element, name) {
 function jqLiteInheritedData(element, name, value) {
   // if element is the document object work with the html element instead
   // this makes $(document).scope() possible
+  //NODE_TYPE_DOCUMENT= 9  别处定义 方便修改 
+  //Document  代表整个文档（DOM 树的根节点）
   if (element.nodeType == NODE_TYPE_DOCUMENT) {
     element = element.documentElement;
   }
+
+  //不是数组 那么就直接初始化数组 妙
   var names = isArray(name) ? name : [name];
 
   while (element) {
@@ -3295,10 +3301,13 @@ function jqLiteInheritedData(element, name, value) {
     // If dealing with a document fragment node with a host element, and no parent, use the host
     // element as the parent. This enables directives within a Shadow DOM or polyfilled Shadow DOM
     // to lookup parent controllers.
+    //NODE_TYPE_DOCUMENT_FRAGMENT = 11
+    //DocumentFragment  代表轻量级的 Document 对象，能够容纳文档的某个部分
     element = element.parentNode || (element.nodeType === NODE_TYPE_DOCUMENT_FRAGMENT && element.host);
   }
 }
 
+//循环判断 如果有firstChild 那么就调用removeChild删除
 function jqLiteEmpty(element) {
   jqLiteDealoc(element, true);
   while (element.firstChild) {
@@ -9395,8 +9404,10 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
             var slots = createMap();
 
             //compileNode不是jqLite对象 html节点
+            //contents函数返回子节点列表
             $template = jqLite(jqLiteClone(compileNode)).contents();
 
+            //是否为插槽 插槽的话directiveValue就是对象
             if (isObject(directiveValue)) {
 
               // We have transclusion slots,
@@ -9461,11 +9472,11 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
             $compileNode.empty(); // clear contents
             childTranscludeFn = compilationGenerator(mightHaveMultipleTransclusionError, $template, transcludeFn, undefined,
                 undefined, { needsNewScope: directive.$$isolateScope || directive.$$newScope});
-            childTranscludeFn.$$slots = slots;
+            childTranscludeFn.$$slots = slots;//有可能是空对象
           }
         }
 
-        //template 字符串
+        //如果定义了template 字符串
         if (directive.template) {
           hasTemplate = true;
           assertNoDuplicate('template', templateDirective, directive, $compileNode);

@@ -24,7 +24,7 @@ var app = angular.module("testDirectiveTransclude", []);
     dir.restrict = "E";  
 
     //transclude false的时候。模板中不能有ngTransclude 除非有parent
-    dir.transclude = true;//默认值  //这里导致没有childTranscludeFn函数传入
+    dir.transclude = true;//默认值为false //这里导致传入的transcludeFn参数实效childTranscludeFn函数传入
     dir.template = "<div>" +  
         "<div>我是模版中的内容</div>" +  
         "<div ng-transclude>我是模版中的插入点</div>" +//不可以这样写，虽然效果一样，但控制台有错误。  
@@ -51,6 +51,7 @@ app.directive("transcludeMultiSlotPoint", function () {
     dir.restrict = "E";  
     dir.transclude = {  
         title: "?multiSlotPointTile",         
+        //title: "?multiSlotPointTile",
         content: "?multiSlotPointContent",  
         footer: "?multiSlotPointFooter"  
     };  
