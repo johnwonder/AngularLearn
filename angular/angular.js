@@ -9352,6 +9352,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         }
         //http://blog.csdn.net/liyanq528/article/details/53782279
         //判断是否存在嵌套
+        //为false 时没有 childTranscludeFn
         if (directiveValue = directive.transclude) {
           hasTranscludeDirective = true;
 
