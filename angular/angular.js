@@ -1023,8 +1023,11 @@ function copy(source, destination) {
         return new source.constructor(source.valueOf());
 
       case '[object RegExp]':
+        //source.source 是源文本
+        //source 本身是 匹配的正则
         var re = new RegExp(source.source, source.toString().match(/[^\/]*$/)[0]);
         re.lastIndex = source.lastIndex;
+        // lastIndex 该属性存放一个整数，它声明的是上一次匹配文本之后的第一个字符的位置
         return re;
 
       case '[object Blob]':
@@ -1490,7 +1493,7 @@ function toKeyValue(obj) {
 
 /**
  * We need our custom method because encodeURIComponent is too aggressive and doesn't follow
- * http://www.ietf.org/rfc/rfc3986.txt with regards to the character set (pchar) allowed in path
+ * http://www.ietf.org/rfc/rfc3986.txt with regards(关于) to the character set (pchar) allowed in path
  * segments:
  *    segment       = *pchar
  *    pchar         = unreserved / pct-encoded / sub-delims / ":" / "@"
@@ -9555,6 +9558,9 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           }
 
           /* jshint -W021 */
+          //重新定义nodeLinkFn
+          //splice() 方法向/从数组中添加/删除项目，然后返回被删除的项目。
+          //注释：该方法会改变原始数组
           nodeLinkFn = compileTemplateUrl(directives.splice(i, directives.length - i), $compileNode,
           /* jshint +W021 */
               templateAttrs, jqCollection, hasTranscludeDirective && childTranscludeFn, preLinkFns, postLinkFns, {
@@ -9906,6 +9912,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         }
 
         //调用controllerProvider 
+        //controller为属性值
+        //比如ng-controller="RouterController"
         var controllerInstance = $controller(controller, locals, true, directive.controllerAs);
 
         // For directives with element transclusion the element is a comment.
@@ -10706,7 +10714,10 @@ var $controllerMinErr = minErr('$controller');
 
 //会根据Controller as ctrl 类似去判断
 //在调用$controller方法时 会根据这个正则去判断
+//+ 匹配前面的子表达式一次或多次(大于等于1次
+//?匹配前面的子表达式零次或一次。
 var CNTRL_REG = /^(\S+)(\s+as\s+([\w$]+))?$/;
+//获取controller的 identifier
 function identifierForController(controller, ident) {
   if (ident && isString(ident)) return ident;
   if (isString(controller)) {
@@ -10792,7 +10803,7 @@ function $ControllerProvider() {
      *
      * @description
       实例化controller
-     * `$controller` service is responsible for instantiating controllers.
+     * `$controller` service is responsible for(职责) instantiating controllers.
      *
      * It's just a simple call to {@link auto.$injector $injector}, but extracted into
      * a service, so that one can override this service with [BC version](https://gist.github.com/1649788).
@@ -10863,7 +10874,7 @@ function $ControllerProvider() {
           identifier: identifier
         });
       }
-
+      //实例化expression 一般都是function
       instance = $injector.instantiate(expression, locals, constructor);
 
       if (identifier) {
