@@ -25,4 +25,13 @@ var PREFIX_REGEXP = /^((?:x|data)[\:\-_])/i;
 
 var result = 'ng-app'.replace(PREFIX_REGEXP, '');
 
+
+//var reg1 = /^(?<txt>(?<=code\=))/g;
+
+var reg1 = /code=(\S)*/g;
+
+var match = reg1.exec("http://218.78.214.32/authDemo/detail.jsp?code=g9DVvc");
+
+console.log("match[0]:" + match[0]);
+
 console.log(camelCase(result));

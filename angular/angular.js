@@ -182,7 +182,8 @@ function minErr(module, ErrorConstructor) {
  *
  * <div doc-module-components="ng"></div>
  */
-
+// + 一次或多次
+// * 任意次
 var REGEX_STRING_REGEXP = /^\/(.+)\/([a-z]*)$/;
 
 // The name of a form control's ValidityState property.
@@ -304,7 +305,7 @@ function isArrayLike(obj) {
  * @param {Object=} context Object to become context (`this`) for the iterator function.
  * @returns {Object|Array} Reference to `obj`.
  */
-
+//调用iterator时 value在前，key在后
 function forEach(obj, iterator, context) {
   var key, length;
   if (obj) {
@@ -317,6 +318,7 @@ function forEach(obj, iterator, context) {
         }
       }
     } else if (isArray(obj) || isArrayLike(obj)) {
+      //isArray 是调用的Array的isArray方法
       var isPrimitive = typeof obj !== 'object';
       for (key = 0, length = obj.length; key < length; key++) {
         if (isPrimitive || key in obj) {
@@ -366,6 +368,7 @@ function forEachSorted(obj, iterator, context) {
  * @param {function(string, *)} iteratorFn
  * @returns {function(*, string)}
  */
+ //在注册指令时用到
 function reverseParams(iteratorFn) {
   return function(value, key) {iteratorFn(key, value);};
 }
@@ -1153,11 +1156,12 @@ function equals(o1, o2) {
 var csp = function() {
   if (!isDefined(csp.rules)) {
 
-
+    //如果找到ng-csp 和 data-ng-csp 的元素
     var ngCspElement = (window.document.querySelector('[ng-csp]') ||
                     window.document.querySelector('[data-ng-csp]'));
 
     if (ngCspElement) {
+      //没有属性就 会加上 csp样式了
       var ngCspAttribute = ngCspElement.getAttribute('ng-csp') ||
                     ngCspElement.getAttribute('data-ng-csp');
       csp.rules = {
@@ -1243,7 +1247,8 @@ var jq = function() {
 function concat(array1, array2, index) {
   return array1.concat(slice.call(array2, index));
 }
-
+//返回一个新的数组，包含从 start 到 end （不包括该元素）的 arrayObject 中的元素
+//请注意，该方法并不会修改数组，而是返回一个子数组。
 function sliceArgs(args, startIndex) {
   return slice.call(args, startIndex || 0);
 }
@@ -3260,6 +3265,7 @@ function jqLiteAddNodes(root, elements) {
   if (elements) {
 
     // if a Node (the most common case)
+    //如果是单个节点
     if (elements.nodeType) {
       root[root.length++] = elements;
     } else {
@@ -3658,6 +3664,7 @@ function specialMouseHandlerWrapper(target, event, handler) {
 
 //////////////////////////////////////////
 // Functions iterating traversal.
+//函数往返遍历
 // These functions chain results into a single
 // selector.
 //////////////////////////////////////////
@@ -3887,6 +3894,7 @@ forEach({
   };
 
   // bind legacy bind/unbind to on/off
+  //调用bind 和unbind 相当于调用on off 
   JQLite.prototype.bind = JQLite.prototype.on;
   JQLite.prototype.unbind = JQLite.prototype.off;
 });
@@ -8055,7 +8063,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
                 }
                 directive.priority = directive.priority || 0; //默认是 0
                 directive.index = index;
-                directive.name = directive.name || name;
+                directive.name = directive.name || name; //directive没有name时默认为注册时的名字
                 directive.require = getDirectiveRequire(directive);
                 directive.restrict = directive.restrict || 'EA';
                 directive.$$moduleName = directiveFactory.$$moduleName;
@@ -8069,7 +8077,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       }
       hasDirectives[name].push(directiveFactory);
     } else {
-      //遍历指令数组
+      //遍历指令对象数组
+      //reverseParams掉转下参数 返回一个function
       forEach(name, reverseParams(registerDirective));
     }
     return this;
@@ -8839,6 +8848,9 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           attrs, directives, nodeLinkFn, childNodes, childLinkFn, linkFnFound, nodeLinkFnFound;
 
       for (var i = 0; i < nodeList.length; i++) {
+
+        //初始化Attributes对象 在line 8394行
+        //传入applyDirectivesToNode方法
         attrs = new Attributes();
         //实例化的时候就把attrs.$attr 实例化了
 
@@ -9319,7 +9331,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
           newScopeDirective = newScopeDirective || directive;
         }
-
+        //directive.name 默认为注册directive的时候的名字
+        //ngController的话就是ngController
         directiveName = directive.name;
 
         // If we encounter a condition that can result in transclusion on the directive,
@@ -9371,6 +9384,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           if (directiveValue == 'element') {
             hasElementTranscludeDirective = true;
             terminalPriority = directive.priority;
+            // $compileNode 为经过包装后的 jqLite对象 类数组
+            //所以可以对$template 应用sliceArgs方法
             $template = $compileNode;
 
             //注释节点
@@ -9405,13 +9420,15 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
                                         });
           } else {
 
+            //如果directive 不是element那么就进入
+            //前提是directive.transclude 有值
             var slots = createMap();
 
             //compileNode不是jqLite对象 html节点
             //contents函数返回子节点列表
             $template = jqLite(jqLiteClone(compileNode)).contents();
 
-            //是否为插槽 插槽的话directiveValue就是对象
+            //是否为slot 插槽的话directiveValue就是对象
             if (isObject(directiveValue)) {
 
               // We have transclusion slots,
@@ -9492,6 +9509,9 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
               : directive.template;
 
           //判断startSymbol是不是{{
+          // 如果是{{}} 那么denormalizeTemplate就是 identity 函数
+          //directiveValue没啥改变
+          //如果是其他 那么denormalizeTemplate 就把directiveValue中的{{}} 改为新的startSymbol
           directiveValue = denormalizeTemplate(directiveValue);
 
           //在replace情况下 不能存在两个根节点
@@ -9544,6 +9564,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
             
             //不替换掉的话 就把directive.template当作子节点
             //然后在compileNodes  获取childLinkFn -> compileNodes时  也是新的子节点了
+            //会调用compileNodes方法对当前节点的子节点做处理
             $compileNode.html(directiveValue);
           }
         }
@@ -9586,8 +9607,10 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           }
         }
 
+        //如果是termimal类型的directive
         if (directive.terminal) {
           nodeLinkFn.terminal = true;
+          //跟directive的priority做比较
           terminalPriority = Math.max(terminalPriority, directive.priority);
         }
 
@@ -9599,9 +9622,10 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       //如果指令没有transclude 或者 transclude为false
       //那么hasTranscludeDirective就为false  line9303
       nodeLinkFn.transcludeOnThisElement = hasTranscludeDirective;//判断是否嵌入
+      //如果有template 或者templateUrl 属性
       nodeLinkFn.templateOnThisElement = hasTemplate;//判断是否有模板
       nodeLinkFn.transclude = childTranscludeFn; //$$slots 附加在childTranscludeFn上
-
+      //如果transclude属性为element的时候
       previousCompileContext.hasElementTranscludeDirective = hasElementTranscludeDirective;
 
       //依赖于是否有templateUrl

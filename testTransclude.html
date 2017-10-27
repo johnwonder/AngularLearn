@@ -21,6 +21,24 @@
 <script type="text/javascript">
 	
 	(function () {
+
+
+//var reg2 = new RegExp("/(?<=aa)[0-9a-z]{2}/g");
+//var str = "12332aa438aaf";
+
+//var match1 = reg2.exec(str);
+
+//console.log(match1);
+
+// var reg1 =  /code=([\S]*)/g;
+var reg1 =  /code=(\S)*/g;
+
+var reg2 =  /(\S)*/g; //貌似取的是最后一个值  *匹配前面的子表达式任意次 但是只有一个字符 所以取最后一个值
+
+var match = reg2.exec("uuttp://218.78.214.32/authDemo/detail.jsp?code=g9DVvhk");
+
+console.log(match);
+
     angular.module("Demo", [])
     .config(['$compileProvider', function ($compileProvider) {
     // disable debug info
