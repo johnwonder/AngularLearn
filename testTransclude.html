@@ -23,6 +23,13 @@
 	(function () {
 
 
+var urlcont = "http://testwx.fapiao.com/fpt-wechat/wxaddcard.do?code=+aUs/iDd4lbzVp779Sro+yZPOlguU4enuVTQV76NYwuPkzlZznqRwQh3S9Jle1v5j3GNilk06GBI"
+        .replace(/code=(\S*)/,function(match, nodeName){  
+
+          //console.log(match[0]);
+          return "code="+ encodeURIComponent(nodeName)
+
+        });
 //var reg2 = new RegExp("/(?<=aa)[0-9a-z]{2}/g");
 //var str = "12332aa438aaf";
 
@@ -34,6 +41,15 @@
 var reg1 =  /code=(\S)*/g;
 
 var reg2 =  /(\S)*/g; //貌似取的是最后一个值  *匹配前面的子表达式任意次 但是只有一个字符 所以取最后一个值
+
+var _html  =  "<HTML>".
+          match(/^(<[^>]+>)/)[1]. //+匹配前面的子表达式一次或多次(大于等于1次）
+          replace(/^<([\w\-]+)/, function(match, nodeName) {
+
+            return '<' + nodeName;
+
+          });
+console.log(_html);
 
 var match = reg2.exec("uuttp://218.78.214.32/authDemo/detail.jsp?code=g9DVvhk");
 

@@ -313,6 +313,9 @@ function forEach(obj, iterator, context) {
       for (key in obj) {
         // Need to check if hasOwnProperty exists,
         // as on IE8 the result of querySelectorAll is an object without a hasOwnProperty function
+        //querySelectorAll是个方法 但是这边的注释貌似有点问题
+        //如果是object 就不会走这边了.. 上面先判断了isFunction
+        //从1.6.0就开始移除了
         if (key != 'prototype' && key != 'length' && key != 'name' && (!obj.hasOwnProperty || obj.hasOwnProperty(key))) {
           iterator.call(context, obj[key], key, obj);
         }
@@ -390,6 +393,7 @@ function nextUid() {
 
 /**
  * Set or clear the hashkey for an object.
+ * 设置或清除hashkey
  * @param obj object
  * @param h the hashkey (!truthy to delete the hashkey)
  */
@@ -401,7 +405,7 @@ function setHashKey(obj, h) {
   }
 }
 
-
+//objs必须是个类数组
 function baseExtend(dst, objs, deep) {
   var h = dst.$$hashKey;
 
@@ -459,6 +463,7 @@ function baseExtend(dst, objs, deep) {
   跟merge的区别就在于是否是深拷贝
  */
 function extend(dst) {
+  //slice 返回一个新的数组，包含从 start 到 end （不包括该元素）的 arrayObject 中的元素。
   return baseExtend(dst, slice.call(arguments, 1), false);
 }
 
@@ -1052,7 +1057,7 @@ function copy(source, destination) {
  *
  * @description
  * Determines if two objects or two values are equivalent. Supports value types, regular
- * expressions, arrays and objects.
+ * expressions, arrays and objects.(值类型，正则。数组 和对象)
  *
  * Two objects or values are considered equivalent if at least one of the following is true:
  *
@@ -1127,7 +1132,7 @@ function equals(o1, o2) {
       return equals(o1.getTime(), o2.getTime());
     } else if (isRegExp(o1)) {
       if (!isRegExp(o2)) return false;
-      return o1.toString() == o2.toString();
+      return o1.toString() == o2.toString(); //正则直接toString
     } else {
       if (isScope(o1) || isScope(o2) || isWindow(o1) || isWindow(o2) ||
         isArray(o2) || isDate(o2) || isRegExp(o2)) return false;
@@ -1228,6 +1233,8 @@ var csp = function() {
  </html>
  ```
  */
+ // null 也是 defined
+ //http://div.io/topic/1154
 var jq = function() {
   if (isDefined(jq.name_)) return jq.name_;
   var el;
@@ -1237,7 +1244,7 @@ var jq = function() {
     prefix = ngAttrPrefixes[i];
     if (el = window.document.querySelector('[' + prefix.replace(':', '\\:') + 'jq]')) {
       name = el.getAttribute(prefix + 'jq');
-      break;
+      break;//一旦找到ng-jq 就退出
     }
   }
 
@@ -1412,7 +1419,7 @@ function convertTimezoneToLocal(date, timezone, reverse) {
 function startingTag(element) {
   element = jqLite(element).clone();
   try {
-    // turns out IE does not let you set .html() on elements which
+    // turns out(实际上) IE does not let you set .html() on elements which
     // are not allowed to have children. So we just ignore it.
     element.empty();
   } catch (e) {}
@@ -1420,8 +1427,9 @@ function startingTag(element) {
   try {
     return element[0].nodeType === NODE_TYPE_TEXT ? lowercase(elemHtml) :
         elemHtml.
-          match(/^(<[^>]+>)/)[1].
+          match(/^(<[^>]+>)/)[1]. //+匹配前面的子表达式一次或多次(大于等于1次）
           replace(/^<([\w\-]+)/, function(match, nodeName) {return '<' + lowercase(nodeName);});
+          //\w 匹配包括下划线的任何单词字符。类似但不等价于“[A-Za-z0-9_]”，这里的"单词"字符使用Unicode字符集
   } catch (e) {
     return lowercase(elemHtml);
   }
@@ -1812,7 +1820,7 @@ function bootstrap(element, modules, config) {
     }
 
     modules.unshift('ng');
-    console.log("bootstrap");
+    //console.log("bootstrap");
     ////通过createInjector方法会调用注入时提供的ng模块中的configFn
     //configFn中提供了$rootScope, $rootElement, $compile, $injector
     //通过$provide.provider方法提供
@@ -1963,10 +1971,11 @@ function assertArg(arg, name, reason) {
 //接受数组的annotate
 //比如['$scope',function($scope){}]
 function assertArgFn(arg, name, acceptArrayAnnotation) {
+  //如果接受数组的注解的话 那么取最后的一个元素
   if (acceptArrayAnnotation && isArray(arg)) {
       arg = arg[arg.length - 1];
   }
-
+  //先要判断arg是否 为function 不是function直接抛出错误
   assertArg(isFunction(arg), name, 'not a function, got ' +
       (arg && typeof arg === 'object' ? arg.constructor.name || 'Object' : typeof arg));
   return arg;
@@ -1991,6 +2000,7 @@ function assertNotHasOwnProperty(name, context) {
  * @returns {Object} value as accessible by path
  */
 //TODO(misko): this function needs to be removed
+//bindFntoScope 为true时 返回 path对应的obj
 function getter(obj, path, bindFnToScope) {
   if (!path) return obj;
   var keys = path.split('.');
@@ -2005,7 +2015,7 @@ function getter(obj, path, bindFnToScope) {
     }
   }
   if (!bindFnToScope && isFunction(obj)) {
-    return bind(lastInstance, obj);
+    return bind(lastInstance, obj); //返回一个function 把obj 绑到lastInstance下
   }
   return obj;
 }
@@ -9219,11 +9229,11 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       if (eager) {
         return compile($compileNodes, transcludeFn, maxPriority, ignoreDirective, previousCompileContext);
       }
-      return function lazyCompilation() {
+      return function lazyCompilation() {     
         if (!compiled) {
           //这里的 有可能会导致 nodeLinkFn 里的 LinkNode和 compileNode不一样
           compiled = compile($compileNodes, transcludeFn, maxPriority, ignoreDirective, previousCompileContext);
-
+          
           // Null out all of these references in order to make them eligible for garbage collection
           // since this is a potentially long lived closure
           $compileNodes = transcludeFn = previousCompileContext = null;
@@ -9679,8 +9689,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
         controllerScope = scope;
         if (newIsolateScopeDirective) {
-          isolateScope = scope.$new(true);
-        } else if (newScopeDirective) {
+          isolateScope = scope.$new(true);//true代表是独立作用域
+        } else if (newScopeDirective) { //newScopeDirective  directive.scope 定义后就有了
           controllerScope = scope.$parent;
         }
 
@@ -9919,6 +9929,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       return value || null;
     }
 
+    //isolateScope 独立作用域
+    //scope 
     function setupControllers($element, attrs, transcludeFn, controllerDirectives, isolateScope, scope, newIsolateScopeDirective) {
       var elementControllers = createMap();
       for (var controllerKey in controllerDirectives) {
@@ -9926,7 +9938,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         var locals = {
           $scope: directive === newIsolateScopeDirective || directive.$$isolateScope ? isolateScope : scope,
           $element: $element,
-          $attrs: attrs,
+          $attrs: attrs,  //Attributes对象
           $transclude: transcludeFn
         };//注入参数而已
 
@@ -10786,8 +10798,10 @@ function $ControllerProvider() {
   this.register = function(name, constructor) {
     assertNotHasOwnProperty(name, 'controller');
     if (isObject(name)) {
+      //extend 里调用 slice 方法 获取 带有name对象的数组
       extend(controllers, name);
     } else {
+      //放入controllers对象数组中
       controllers[name] = constructor;
     }
   };
@@ -10855,11 +10869,15 @@ function $ControllerProvider() {
         }
         constructor = match[1],//构造函数
         identifier = identifier || match[3];
+        //去controllers对象中去找
         expression = controllers.hasOwnProperty(constructor)
             ? controllers[constructor]
-            : getter(locals.$scope, constructor, true) ||
+            : getter(locals.$scope, constructor, true) || //从scope对象上获取constructor这个属性
                 (globals ? getter($window, constructor, true) : undefined);
 
+        //验证参数数组里最后一个是不是函数
+        //或者参数是不是函数
+        //true 代表是不是接受数组参数
         assertArgFn(expression, constructor, true);
       }
 

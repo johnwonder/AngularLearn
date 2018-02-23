@@ -28,10 +28,20 @@ var result = 'ng-app'.replace(PREFIX_REGEXP, '');
 
 //var reg1 = /^(?<txt>(?<=code\=))/g;
 
-var reg1 = /code=(\S)*/g;
+var reg1 = /code=(\S*)/g;
 
-var match = reg1.exec("http://218.78.214.32/authDemo/detail.jsp?code=g9DVvc");
+var match = reg1.exec("http://testwx.fapiao.com/fpt-wechat/wxaddcard.do?code=+aUs/iDd4lbzVp779Sro+yZPOlguU4enuVTQV76NYwuPkzlZznqRwQh3S9Jle1v5j3GNilk06GBI");
+var urlcont = "http://testwx.fapiao.com/fpt-wechat/wxaddcard.do?code=+aUs/iDd4lbzVp779Sro+yZPOlguU4enuVTQV76NYwuPkzlZznqRwQh3S9Jle1v5j3GNilk06GBI"
+        .replace(/code=(\S*)/,function(match, nodeName){  
 
-console.log("match[0]:" + match[0]);
+          //console.log(match[0]);
+          return "code="+ encodeURI(nodeName)
 
-console.log(camelCase(result));
+        });
+// var reg2  =  "<HTML>".
+//           match(/^(<[^>]+>)/)[1]. //+匹配前面的子表达式一次或多次(大于等于1次）
+//           replace(/^<([\w\-]+)/, function(match, nodeName) {return '<' + lowercase(nodeName);});
+
+//console.log("match[0]:" + match[1]);
+
+console.log(urlcont);

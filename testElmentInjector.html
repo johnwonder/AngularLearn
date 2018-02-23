@@ -21,6 +21,9 @@
 	
 
 	(function () {
+
+    var divSelector = document.querySelectorAll("div");
+
     //不初始化Demo会报错
     angular.module("Demo", [],function($provide){  
     $provide.provider('Customer',function(){  
