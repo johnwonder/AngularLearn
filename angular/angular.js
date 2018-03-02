@@ -491,7 +491,7 @@ function merge(dst) {
 }
 
 
-
+//10进制
 function toInt(str) {
   return parseInt(str, 10);
 }
@@ -1575,7 +1575,7 @@ function getNgAttribute(element, ngAttr) {
  *   tracking down the root of these bugs.
  *
  * @description
- *
+ * 用ngApp这个指令去自动启动angular应用，
  * Use this directive to **auto-bootstrap** an AngularJS application. The `ngApp` directive
  * designates the **root element** of the application and is typically placed near the root element
  * of the page - e.g. on the `<body>` or `<html>` tags.
@@ -1591,7 +1591,7 @@ function getNgAttribute(element, ngAttr) {
  *   {@link ngRoute.ngView `ngView`}.
  *   Doing this misplaces the app {@link ng.$rootElement `$rootElement`} and the app's {@link auto.$injector injector},
  *   causing animations to stop working and making the injector inaccessible from outside the app.
- *
+ * 根模块
  * You can specify an **AngularJS module** to be used as the root module for the application.  This
  * module will be loaded into the {@link auto.$injector} when the application is bootstrapped. It
  * should contain the application code needed or have dependencies on other modules that will
@@ -1655,7 +1655,7 @@ function getNgAttribute(element, ngAttr) {
    <file name="script.js">
    angular.module('ngAppStrictDemo', [])
      // BadController will fail to instantiate, due to relying on automatic function annotation,
-     // rather than an explicit annotation
+     // rather than an explicit(显式) annotation
      .controller('BadController', function($scope) {
        $scope.a = 1;
        $scope.b = 2;
@@ -1729,6 +1729,7 @@ function angularInit(element, bootstrap) {
  * @name angular.bootstrap
  * @module ng
  * @description
+ * 用这个方法可以手动启动angular 应用
  * Use this function to manually start up angular application.
  *
  * For more information, see the {@link guide/bootstrap Bootstrap guide}.
@@ -4660,6 +4661,7 @@ function annotate(fn, strictDi, name) {
  *///http://blog.csdn.net/wz172637815/article/details/50595718
 
 //http://www.mamicode.com/info-detail-247448.html
+//createInjector内部调用createInternalInjector
 function createInjector(modulesToLoad, strictDi) {
   strictDi = (strictDi === true);
   var INSTANTIATING = {},//instantiating
@@ -6611,14 +6613,14 @@ function $CacheFactoryProvider() {
     var caches = {};
 
     function cacheFactory(cacheId, options) {
-      if (cacheId in caches) {
+      if (cacheId in caches) {//如果caches中已经存在cachdeId
         throw minErr('$cacheFactory')('iid', "CacheId '{0}' is already taken!", cacheId);
       }
 
       var size = 0,
           //把options 和{id:cacheId} 放入{} 中 不是深拷贝
           stats = extend({}, options, {id: cacheId}),
-          data = createMap(),
+          data = createMap(),//通过Object.create(null) 创建个空对象
           capacity = (options && options.capacity) || Number.MAX_VALUE,
           lruHash = createMap(),
           freshEnd = null,
@@ -6685,12 +6687,15 @@ function $CacheFactoryProvider() {
          */
         put: function(key, value) {
           if (isUndefined(value)) return;
+
+          //如果设定的capcity小于maxvalue
           if (capacity < Number.MAX_VALUE) {
+            //lruHash 存了当前的key 还有可能是 p 和n  (previous和next)
             var lruEntry = lruHash[key] || (lruHash[key] = {key: key});
 
-            refresh(lruEntry);
+            refresh(lruEntry);//把当前entry放入链表末尾
           }
-
+          //如果key 在data里不存在 那么增加size 
           if (!(key in data)) size++;
           data[key] = value;
 
@@ -6719,6 +6724,10 @@ function $CacheFactoryProvider() {
 
             if (!lruEntry) return;
 
+            // 获取first的时候 因为staleEnd为first 所以会让staleEnd指向 second
+            // 内部会执行link 使得 second.p = null 
+            // first.p =  third  third.n = first
+            //stableEnd为 second freshEnd为first
             refresh(lruEntry);
           }
 
@@ -6737,15 +6746,24 @@ function $CacheFactoryProvider() {
          * @param {string} key the key of the entry to be removed
          */
         remove: function(key) {
+          //如果capacity小于maxvalue
           if (capacity < Number.MAX_VALUE) {
+            //先取出当前key的entry
             var lruEntry = lruHash[key];
 
             if (!lruEntry) return;
 
+            //第一次超过时 freshEnd 为third  lryEntry为first
             if (lruEntry == freshEnd) freshEnd = lruEntry.p;
+
+             //第一次超过时 staleEnd 为first  lryEntry为first 所以 会让 stalEnd 指向second 
             if (lruEntry == staleEnd) staleEnd = lruEntry.n;//把淘汰节点的一个节点选中
+            
+            //第一次超过时 lryEntry.n为 second  lryEntry.p 为null
+            //执行结果为 second.p = null 
             link(lruEntry.n,lruEntry.p);
 
+            //把当前key从lruHash中删除
             delete lruHash[key];
           }
 
@@ -6817,16 +6835,24 @@ function $CacheFactoryProvider() {
        */
       function refresh(entry) {
         if (entry != freshEnd) {
-          if (!staleEnd) {
+          if (!staleEnd) { //staleEnd为空那么就让他指向当前entry
             staleEnd = entry;
           } else if (staleEnd == entry) {
             staleEnd = entry.n; //用于把 当前的下一个节点 用作淘汰节点
           }
 
+          //放入第一个元素时 entry.n,entry.p都为undefined
           link(entry.n, entry.p); //当前的上一个节点 和当前的下一个节点
           link(entry, freshEnd); // 当前的节点 和 最新的末尾节点
-          freshEnd = entry;
+          freshEnd = entry;  
           freshEnd.n = null;
+          //第一次执行完 结果为: freshEnd = first  staleEnd为first  first.p=null first.n=null 
+          //第二次执行完 结果为：freshEnd = second staleEnd为first  first.p=null first.n= second
+          // scecond.p = first scecond.n = null
+
+          //第三次执行完 freshEnd = third staleEnd为first first.p=null first.n= second
+          // second.p = first second.n = null
+          // third.p = second third.n = null
         }
       }
 
@@ -6835,7 +6861,9 @@ function $CacheFactoryProvider() {
        * bidirectionally(双向链表) links two entries of the LRU linked list
        */
       function link(nextEntry, prevEntry) {
+        //undefined 不等于undefined
         if (nextEntry != prevEntry) {
+          //
           if (nextEntry) nextEntry.p = prevEntry; //p stands for previous, 'prev' didn't minify
           if (prevEntry) prevEntry.n = nextEntry; //n stands for next, 'next' didn't minify
         }
