@@ -15,17 +15,16 @@
 			"file": "angular.js",
 			"settings":
 			{
-				"buffer_size": 1205428,
+				"buffer_size": 1212037,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "/Users/zhangjiong/code/AngularLearn/transclude/directiveTransclude.html",
+			"file": "/Users/zhangjiong/HexoSource/package.json",
 			"settings":
 			{
-				"buffer_size": 689,
-				"encoding": "UTF-8",
+				"buffer_size": 481,
 				"line_ending": "Unix"
 			}
 		},
@@ -33,7 +32,7 @@
 			"file": "/Users/zhangjiong/code/AngularLearn/transclude/transclude1.js",
 			"settings":
 			{
-				"buffer_size": 2438,
+				"buffer_size": 2507,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -71,10 +70,13 @@
 	},
 	"expanded_folders":
 	[
-		"/Users/zhangjiong/code/AngularLearn"
+		"/Users/zhangjiong/HexoSource/node_modules/abbrev",
+		"/Users/zhangjiong/code/hexoNew",
+		"/Users/zhangjiong/code/hexoNew/source"
 	],
 	"file_history":
 	[
+		"/Users/zhangjiong/code/AngularLearn/js/angular.js",
 		"/Users/zhangjiong/Downloads/build.xml",
 		"/Users/zhangjiong/code/helloworld/helloworld/ViewController.h",
 		"/Users/zhangjiong/code/angularRead/angular/testTransclude.html"
@@ -95,6 +97,18 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"createInjector",
+			"setupModuleLoader",
+			"createInjector",
+			"setupModuleLoader",
+			"createInjector",
+			"angularModule",
+			"setupModuleLoader",
+			"createInjector",
+			"loadModules",
+			"createInjector",
+			"stats",
+			"cacheFactory",
 			"applyDirectivesToNode",
 			"ngTransclude",
 			"collectDirectives",
@@ -210,19 +224,7 @@
 			"templateOnThisElement",
 			"hasTranscludeDirective",
 			"transcludeOnThisElement",
-			"createBoundTranscludeFn",
-			"applyDirectivesToNode",
-			"compositeLinkFn",
-			"publicLinkFn",
-			"applyDirectivesToNode",
-			"boundTranscludeFn",
-			"transcludeFn",
-			"invokeLinkFn",
-			"applyDirectivesToNode",
-			"ngTrans",
-			"invokeLinkFn",
-			"postLinkFns",
-			"applyDirectivesToNode"
+			"createBoundTranscludeFn"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -241,6 +243,12 @@
 	[
 		{
 			"path": "/Users/zhangjiong/code/AngularLearn"
+		},
+		{
+			"path": "/Users/zhangjiong/HexoSource"
+		},
+		{
+			"path": "/Users/zhangjiong/code/hexoNew"
 		}
 	],
 	"groups":
@@ -255,15 +263,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1205428,
+						"buffer_size": 1212037,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								321030,
-								321030
+								158374,
+								158374
 							]
 						],
 						"settings":
@@ -273,7 +281,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 187891.0,
+						"translation.y": 103757.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -281,30 +289,32 @@
 				},
 				{
 					"buffer": 1,
-					"file": "/Users/zhangjiong/code/AngularLearn/transclude/directiveTransclude.html",
-					"semi_transient": true,
+					"file": "/Users/zhangjiong/HexoSource/package.json",
+					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 689,
+						"buffer_size": 481,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								119,
-								141
+								232,
+								241
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/HTML/HTML.sublime-syntax"
+							"syntax": "Packages/JavaScript/JSON.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
@@ -313,15 +323,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2438,
+						"buffer_size": 2507,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1186,
-								1186
+								0,
+								0
 							]
 						],
 						"settings":
@@ -334,7 +344,7 @@
 						"translation.y": 721.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 2,
 					"type": "text"
 				}
 			]
@@ -399,7 +409,7 @@
 		[
 			[
 				"",
-				"~/code/AngularLearn/angular/angular.sublime-workspace"
+				"~/code/angular.sublime-project"
 			]
 		],
 		"width": 380.0

@@ -2695,6 +2695,9 @@ function publishExternalAPI(angular) {
   //ngLocale 模块在源码最后定义
 
   //loadModules方法中调用runInvokeQueue 先抽取从providerCache里抽取$provide
+  // name require configFn
+  //name = ng require= ngLocale configFn = ['$provide',function ngModule($provide){}]
+  //执行后 modules对象里放入了ng键 configBlocks放入了['$injector', 'invoke',['$provide',function ngModule($provide){}]]
   angularModule('ng', ['ngLocale'], ['$provide',
     function ngModule($provide) {
       // $$sanitizeUriProvider needs to be before $compileProvider as it is used by it.
@@ -2764,7 +2767,7 @@ function publishExternalAPI(angular) {
         $$AnimateRunner: $$AnimateRunnerFactoryProvider,
         $$animateAsyncRun: $$AnimateAsyncRunFactoryProvider,
         $browser: $BrowserProvider,
-        $cacheFactory: $CacheFactoryProvider,
+        $cacheFactory: $CacheFactoryProvider,//cacheFactory 
         $controller: $ControllerProvider,
         $document: $DocumentProvider,
         $exceptionHandler: $ExceptionHandlerProvider,
@@ -4691,6 +4694,7 @@ function createInjector(modulesToLoad, strictDi) {
     // };
 
       //createInternalInjector(cache,factory)
+      //定义了providerCache的 $injector属性
       providerInjector = (providerCache.$injector =
           createInternalInjector(providerCache, function(serviceName, caller) {
             if (angular.isString(caller)) {
@@ -4708,9 +4712,12 @@ function createInjector(modulesToLoad, strictDi) {
                 provider.$get, provider, undefined, serviceName);
             //$get 就返回下面的valueFn
           }),
-      instanceInjector = protoInstanceInjector;
+      
 
   //为了下面的protoInstanceInjector.get里的调用
+  //之后调用实例化依赖时就用 instanceInjector
+      instanceInjector = protoInstanceInjector;
+
 
   //$get 返回一个 返回protoInstanceInjector的函数
   //function valueFn(value) {return function valueRef() {return value;};}
@@ -4726,9 +4733,14 @@ function createInjector(modulesToLoad, strictDi) {
 
   //invoke $get就是返回  protorInstanceInjector
 
+   // protoInsatanceInjector创建的时候 就把instanceCache对象放入了
+   //所以之后的从protoInstanceInjector获取的对象放入了instanceCache
+  //get方法就是getService方法
+  //获取后放入instanceCache
   instanceInjector = protoInstanceInjector.get('$injector');//上面定义的providerCache.$jnjector
   instanceInjector.strictDi = strictDi;
   //if(fn) 因为有的方法invoke没有返回值
+  //invoke的时候 通过injectionArgs方法把参数对象注入
   forEach(runBlocks, function(fn) { if (fn) instanceInjector.invoke(fn); });
 
   return instanceInjector;
@@ -4838,6 +4850,7 @@ function createInjector(modulesToLoad, strictDi) {
       try {
         if (isString(module)) {
           //获取module
+          //moduleFn就是 moduleInstance
           moduleFn = angularModule(module);
           //moduleFn.requires 比如['ngLocale']
           runBlocks = runBlocks.concat(loadModules(moduleFn.requires)).concat(moduleFn._runBlocks);
@@ -4921,7 +4934,7 @@ function createInjector(modulesToLoad, strictDi) {
           throw $injectorMinErr('itkn',
                   'Incorrect injection token! Expected service name as string, got {0}', key);
         }
-        console.log("key:"+key);
+        //console.log("key:"+key);
         args.push(locals && locals.hasOwnProperty(key) ? locals[key] :
                                                          getService(key, serviceName));
       }
@@ -6783,10 +6796,10 @@ function $CacheFactoryProvider() {
          * Clears the cache object of any entries.
          */
         removeAll: function() {
-          data = createMap();
-          size = 0;
+          data = createMap();//重置data
+          size = 0;//变为0
           lruHash = createMap();
-          freshEnd = staleEnd = null;
+          freshEnd = staleEnd = null; //fresh 和stale是对立的 stale就是不新鲜的意思
         },
 
 
@@ -6880,7 +6893,7 @@ function $CacheFactoryProvider() {
    *
    * @returns {Object} - key-value map of `cacheId` to the result of calling `cache#info`
    */
-   //所有的缓存
+   //所有缓存的信息 带cacheid 
     cacheFactory.info = function() {
       var info = {};
       forEach(caches, function(cache, cacheId) {
@@ -8930,7 +8943,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
                      && nodeLinkFn.transclude) : transcludeFn); //传入当前节点的transcludeFn给子节点用
 
         if (nodeLinkFn || childLinkFn) {
-          linkFns.push(i, nodeLinkFn, childLinkFn); //放入linkFn数组
+          linkFns.push(i, nodeLinkFn, childLinkFn); //nodeLinkFn和compositeLinkFn 放入linkFns数组
           linkFnFound = true;//返回compositeLinkFn
           nodeLinkFnFound = nodeLinkFnFound || nodeLinkFn;
         }
