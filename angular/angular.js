@@ -1833,7 +1833,7 @@ function bootstrap(element, modules, config) {
        function bootstrapApply(scope, element, compile, injector) {
         scope.$apply(function() { //rootScope
           element.data('$injector', injector);
-          compile(element)(scope);
+          compile(element)(scope); //compileProvider
         });
       }]
     );
@@ -2401,6 +2401,7 @@ function setupModuleLoader(window) {
            * For more about how to configure services, see
            * {@link providers#provider-recipe Provider Recipe}.
            */
+           //在模块加载的时候 执行
           config: config,
 
           /**
@@ -2412,6 +2413,7 @@ function setupModuleLoader(window) {
            * @description
            * Use this method to register work which should be performed when the injector is done
            * loading all modules.
+           //在注入完成之后调用
            */
           run: function(block) {
             runBlocks.push(block);
@@ -2706,6 +2708,7 @@ function publishExternalAPI(angular) {
       });
       //用 injector.invoke时候放入providerCache
       //directive方法调用 forEach(name, reverseParams(registerDirective));
+      //provider方法(key,value)调用
       $provide.provider('$compile', $CompileProvider).
         directive({
             a: htmlAnchorDirective,
@@ -4109,6 +4112,7 @@ function anonFn(fn) {
   return 'fn';
 }
 
+//如果定义了fn.$inject 那么直接返回fn.$inject
 function annotate(fn, strictDi, name) {
   var $inject,
       argDecl,
@@ -4671,6 +4675,8 @@ function createInjector(modulesToLoad, strictDi) {
       providerSuffix = 'Provider',
       path = [],
       loadedModules = new HashMap([], true),
+      //定义了$provide缓存 在 调用ng模块的configFn时用到了。
+      //line 2711
       providerCache = {
         $provide: {
             provider: supportObject(provider),
@@ -4759,6 +4765,8 @@ function createInjector(modulesToLoad, strictDi) {
     };
   }
 
+ //返回实例化的 provider 
+ //比如在定义ng模块的时候函数内部用到的链式调用
   function provider(name, provider_) {
     assertNotHasOwnProperty(name, 'service');
     if (isFunction(provider_) || isArray(provider_)) {
@@ -4827,14 +4835,16 @@ function createInjector(modulesToLoad, strictDi) {
       function runInvokeQueue(queue) {
         var i, ii;
         for (i = 0, ii = queue.length; i < ii; i++) {
-          var invokeArgs = queue[i],
+          var invokeArgs = queue[i], //invokeArgs也是个数组
               //获取provider
               provider = providerInjector.get(invokeArgs[0]);
               //getService 通过providerCache寻找
                  //console.log(invokeArgs[0]); -- $injector  $controllerProvider
           //console.log('invokeArgs[2][0]:'+invokeArgs[2][0]);
           //console.log(invokeArgs[1]);  -- invoke
-          //调用provider中的方法
+          //调用provider中的方法  
+          //比如injectorProvider  调用invoke方法 传入函数
+          //函数的参数可以注入
           provider[invokeArgs[1]].apply(provider, invokeArgs[2]);
 
     //      function(key, value) {
@@ -6714,7 +6724,7 @@ function $CacheFactoryProvider() {
 
           //当大于capacity时 会清楚最早加入的那个
           if (size > capacity) {
-            this.remove(staleEnd.key);//移除淘汰节点
+            this.remove(staleEnd.key);//移除淘汰节点stableEnd
           }
 
           return value;
@@ -6769,7 +6779,7 @@ function $CacheFactoryProvider() {
             //第一次超过时 freshEnd 为third  lryEntry为first
             if (lruEntry == freshEnd) freshEnd = lruEntry.p;
 
-             //第一次超过时 staleEnd 为first  lryEntry为first 所以 会让 stalEnd 指向second 
+             //第一次超过时 staleEnd 为first  lryEntry为first 所以 会让 stalEnd 指向second 以便于下次移除时
             if (lruEntry == staleEnd) staleEnd = lruEntry.n;//把淘汰节点的一个节点选中
             
             //第一次超过时 lryEntry.n为 second  lryEntry.p 为null
@@ -7933,6 +7943,8 @@ var _UNINITIALIZED_VALUE = new UNINITIALIZED_VALUE();
  为了在injectionArgs方法中 annotate中返回 然后给injectionArgs 使用
  在bootstrap -> createInjector的时候加载ng模块的时候调用
  $provide.provider后初始化CompileProvider
+ 其实注释掉也不会报错
+ 因为injectionArgs会解析函数的参数
  */
 $CompileProvider.$inject = ['$provide', '$$sanitizeUriProvider'];
 function $CompileProvider($provide, $$sanitizeUriProvider) {
@@ -8091,6 +8103,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
    *返回自己供链式调用
    */
   this.directive = function registerDirective(name, directiveFactory) {
+    //directive模块 不能包含 hasOwnProperty的 名称
     assertNotHasOwnProperty(name, 'directive');
     if (isString(name)) {
       assertValidDirectiveName(name);
@@ -8100,6 +8113,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         //Suffix =  Directive
 
         //$provide.factory就是调用provider 提供个privder
+        //$provide用到了 compileProvider的函数参数$provide
         $provide.factory(name + Suffix, ['$injector', '$exceptionHandler',
           function($injector, $exceptionHandler) {
             var directives = [];
