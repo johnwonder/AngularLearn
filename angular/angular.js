@@ -2715,7 +2715,7 @@ function publishExternalAPI(angular) {
             input: inputDirective,
             textarea: inputDirective,
             form: formDirective,
-            script: scriptDirective,
+            script: scriptDirective,//定义了script
             select: selectDirective,
             style: styleDirective,
             option: optionDirective,
@@ -8114,6 +8114,11 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
         //$provide.factory就是调用provider 提供个privder
         //$provide用到了 compileProvider的函数参数$provide
+        //定义了一个providerCache而已
+        //还没到调用directiveFactory
+
+        //addDirective的时候通过$injector.get调用
+        //$injector.get内部调用 invoke  放入instanceCache中
         $provide.factory(name + Suffix, ['$injector', '$exceptionHandler',
           function($injector, $exceptionHandler) {
             var directives = [];
@@ -8124,6 +8129,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
                   directive = { compile: valueFn(directive) };
                 } else if (!directive.compile && directive.link) {
                   //没有compile函数 且 有link函数
+                  //那么就默认会生成compile函数
                   directive.compile = valueFn(directive.link);
                 }
                 directive.priority = directive.priority || 0; //默认是 0
@@ -8144,6 +8150,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
     } else {
       //遍历指令对象数组
       //reverseParams掉转下参数 返回一个function
+      //貌似默认就是按字母排序的
       forEach(name, reverseParams(registerDirective));
     }
     return this;
@@ -8297,7 +8304,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
    * @kind function
    *
    * @description
-   * Retrieves or overrides the default regular expression that is used for whitelisting of safe
+   * Retrieves(取回) or overrides the default regular expression that is used for whitelisting of safe
    * urls during a[href] sanitization.
    *
    * The sanitization is a security measure aimed at preventing XSS attacks via html links.
@@ -8767,7 +8774,12 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
     return compile;
 
     //================================
+    //compile函数会调用compileNodes 
+    //compileNodes 函数会调用applyDirectivesToNode 返回nodeLinkFn
+    //调用自身返回compositeLinkFn作为ChildlinkFn 
 
+    //compile函数自身返回publicLinkFn 
+    //publicLinkFn 函数内部调用compositeLinkFn 传入rootscope 
     function compile($compileNodes, transcludeFn, maxPriority, ignoreDirective,
                         previousCompileContext) {
       if (!($compileNodes instanceof jqLite)) {
@@ -9102,6 +9114,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           // use the node name: <directive>
           //nodeName_ 获取node名称 比如div
           // addDirective 中判断 hasDirectives中是否有这个
+          //这个类型的节点在内置指令中一般是没有的
+          //比如style script
           addDirective(directives,
               directiveNormalize(nodeName_(node)), 'E', maxPriority, ignoreDirective);
 
@@ -9352,6 +9366,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
       // executes all directives on the current element
       //在这个元素上执行所有指令
+      //所有
       for (var i = 0, ii = directives.length; i < ii; i++) {
         directive = directives[i];
         var attrStart = directive.$$start;// multiElement
@@ -9659,6 +9674,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           ii = directives.length;
         } else if (directive.compile) {
           try {
+            //对于只有link函数的指令来说 在注册指令时会默认定义一个compile函数
             //http://www.cnblogs.com/GoodPingGe/p/4361354.html
             linkFn = directive.compile($compileNode, templateAttrs, childTranscludeFn);
             var context = directive.$$originalDirective || directive;
@@ -10046,6 +10062,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
      */
      /*
       location参数 就是代表是 元素 ，属性 ，样式 ，还是注释
+      在collectDirectives中根据节点类型收集指令
+      此函数从依赖注入中获取 $injector变量为返回compile函数时作为参数注入的
      */
     function addDirective(tDirectives, name, location, maxPriority, ignoreDirective, startAttrName,
                           endAttrName) {
@@ -10054,6 +10072,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       //判断hasDirectives中是否有这个name属性
       if (hasDirectives.hasOwnProperty(name)) {
         //从$injector中获取该name的directive
+        //因为调用registerDirectives的时候已经放入providerCache中了
+        //通过protoInstanceInjector的工厂方法调用
         for (var directive, directives = $injector.get(name + Suffix),
             i = 0, ii = directives.length; i < ii; i++) {
           try {

@@ -22,16 +22,16 @@ myCache.put("name3","sssss");
 //其中，capacity会使用"近期缓存最久未使用算法"，就是说，加如缓存容量为20，现在已经缓存了缓存20个，当第21个想要被缓存的时候，最久最小未被使用的缓存键值对会被清除，以便腾出空间容纳第21个缓存。
 });
 
-app.controller('ParentController',function($scope){
+// app.controller('ParentController',function($scope){
 
-	$scope.person = {greeted:false};
-});
+// 	$scope.person = {greeted:false};
+// });
 
-app.controller('ChildController',function($scope){
+// app.controller('ChildController',function($scope){
 
-	$scope.sayHello =function(){
+// 	$scope.sayHello =function(){
 		
-			$scope.person.greeted = true;
-	};
+// 			$scope.person.greeted = true;
+// 	};
 
-});
+// });
