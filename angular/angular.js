@@ -9678,7 +9678,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
             //http://www.cnblogs.com/GoodPingGe/p/4361354.html
             linkFn = directive.compile($compileNode, templateAttrs, childTranscludeFn);
             var context = directive.$$originalDirective || directive;
-            if (isFunction(linkFn)) {
+            if (isFunction(linkFn)) { //如果指令里定义了link函数 那么就应该走这边
               addLinkFns(null, bind(context, linkFn), attrStart, attrEnd);
             } else if (linkFn) {//应该是对象
               addLinkFns(bind(context, linkFn.pre), bind(context, linkFn.post), attrStart, attrEnd);
