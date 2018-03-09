@@ -461,6 +461,7 @@ function baseExtend(dst, objs, deep) {
  */
  /*
   跟merge的区别就在于是否是深拷贝
+  //浅拷贝
  */
 function extend(dst) {
   //slice 返回一个新的数组，包含从 start 到 end （不包括该元素）的 arrayObject 中的元素。
@@ -2452,6 +2453,8 @@ function setupModuleLoader(window) {
          /*
            只放入invokeQueue中
            返回moduleInstance供继续调用
+
+           controller是compileProvider
          */
         function invokeLaterAndSetModuleName(provider, method) {
           return function(recipeName, factoryFunction) {
@@ -4945,6 +4948,7 @@ function createInjector(modulesToLoad, strictDi) {
                   'Incorrect injection token! Expected service name as string, got {0}', key);
         }
         //console.log("key:"+key);
+        //先从locals里取 比如$scope
         args.push(locals && locals.hasOwnProperty(key) ? locals[key] :
                                                          getService(key, serviceName));
       }
@@ -8002,6 +8006,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
     return bindings;
   }
 
+  //在addDirective中调用
   function parseDirectiveBindings(directive, directiveName) {
     var bindings = {
       isolateScope: null,
@@ -8748,6 +8753,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       $element.data('$binding', bindings);
     } : noop;
 
+    //默认是开启的
     compile.$$addBindingClass = debugInfoEnabled ? function $$addBindingClass($element) {
       safeAddClass($element, 'ng-binding');
     } : noop;
@@ -8939,6 +8945,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
         // 应用指令，返回链接函数
         //$rootElement为 nodeList
+        //有指令才会赋值
         nodeLinkFn = (directives.length)
             ? applyDirectivesToNode(directives, nodeList[i], attrs, transcludeFn, $rootElement,
                                       null, [], [], previousCompileContext)
@@ -9013,8 +9020,11 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           if (nodeLinkFn) {
             //如果nodeLinkFn 的scope 为true的情况下
             //scope属性是在 有newScopeDirective 并且newScopeDirective.scope为 true的情况下
+
+            //controller指令这边为true
             if (nodeLinkFn.scope) {
               childScope = scope.$new();
+              //如果debugInfoEnabled 放入jqLiteData-> jqCache
               compile.$$addScopeInfo(jqLite(node), childScope);
             } else {
               childScope = scope;
@@ -9033,7 +9043,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
               //指令为slot的时候 childBoundTransclude 通常直接为 parentBoundTranscludeFn
               childBoundTranscludeFn = parentBoundTranscludeFn;
-
+;
             } else if (!parentBoundTranscludeFn && transcludeFn) {
 
               //优先会使用parentBoundTranscludeFn
@@ -9152,9 +9162,11 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
               name = name.substr(0, name.length - 6); //去掉-start
             }
 
+            //比如 {ngController: "ng-controller"}
             nName = directiveNormalize(name.toLowerCase());
             attrsMap[nName] = name;// $attr
             if (isNgAttr || !attrs.hasOwnProperty(nName)) {
+                //比如ngController:"MyController"
                 attrs[nName] = value;// Attributes类
                 //放入attrs集合
                 if (getBooleanAttrName(node, nName)) {
@@ -9387,8 +9399,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         if (directiveValue = directive.scope) {
 
           //跳过检查异步模板
-          // skip the check for directives with async templates, we'll check the derived sync
-          // directive when the template arrives
+          // skip the check for directives with async templates, we'll check the derived(派生) sync
+          // directive when the template arrives(到达)
           if (!directive.templateUrl) {
             if (isObject(directiveValue)) {
               // This directive is trying to add an isolated scope.
@@ -9698,6 +9710,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       }
 
       //newScopeDirective 在 directive 的scope属性有的情况下 会赋值
+      //比如ngController指令这边就会为true了
       nodeLinkFn.scope = newScopeDirective && newScopeDirective.scope === true;
 
       //如果指令没有transclude 或者 transclude为false
@@ -9722,6 +9735,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           if (attrStart) pre = groupElementsLinkFnWrapper(pre, attrStart, attrEnd);
           pre.require = directive.require;
           pre.directiveName = directiveName;
+          //newIsolateScopeDirective 在directive有scope 属性的时候定义的
           if (newIsolateScopeDirective === directive || directive.$$isolateScope) {
             pre = cloneAndAnnotateFn(pre, {isolateScope: true});
           }
@@ -9729,8 +9743,11 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         }
         if (post) {
           if (attrStart) post = groupElementsLinkFnWrapper(post, attrStart, attrEnd);
+          
+          //extend的时候 Object.keys能取到这两个function的key
           post.require = directive.require;
           post.directiveName = directiveName;
+
           if (newIsolateScopeDirective === directive || directive.$$isolateScope) {
             post = cloneAndAnnotateFn(post, {isolateScope: true});
           }
@@ -9744,6 +9761,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         var i, ii, linkFn, isolateScope, controllerScope, elementControllers, transcludeFn, $element,
             attrs, scopeBindingInfo;
 
+        //compileNode 为 调用applyDirectivesToNode方法时传入的compileNode参数
         if (compileNode === linkNode) {
           attrs = templateAttrs;
           $element = templateAttrs.$$element;
@@ -9805,6 +9823,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         for (var name in elementControllers) {
           var controllerDirective = controllerDirectives[name];
           var controller = elementControllers[name];
+          //在addDirective 也就是收集directive的时候
           var bindings = controllerDirective.$$bindings.bindToController;
 
           if (controller.identifier && bindings) {
@@ -9898,6 +9917,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         for (i = postLinkFns.length - 1; i >= 0; i--) {
           linkFn = postLinkFns[i];
            //把linkFn后面的参数依次传给LinkFn
+           //包装一层
           invokeLinkFn(linkFn,
               linkFn.isolateScope ? isolateScope : scope,
               $element,
@@ -10014,7 +10034,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         };//注入参数而已
 
         var controller = directive.controller; 
-        if (controller == '@') { //元素定义的controller属性
+        if (controller == '@') { 
+          //获取元素定义的controller属性值
           controller = attrs[directive.name];//ngController
         }
 
@@ -10084,6 +10105,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
               if (startAttrName) {
                 directive = inherit(directive, {$$start: startAttrName, $$end: endAttrName});
               }
+
+              //比如controllerDirective
               if (!directive.$$bindings) {
                 var bindings = directive.$$bindings =
                     parseDirectiveBindings(directive, directive.name);
@@ -10313,6 +10336,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       if (interpolateFn) {
         directives.push({
           priority: 0,
+          //在applyDirectivesToNode时调用
           compile: function textInterpolateCompileFn(templateNode) {
             var templateNodeParent = templateNode.parent(),
                 hasCompileParent = !!templateNodeParent.length;
@@ -10325,6 +10349,10 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
               var parent = node.parent();
               if (!hasCompileParent) compile.$$addBindingClass(parent);
               compile.$$addBindingInfo(parent, interpolateFn.expressions);
+              
+              //主要是interpolateFn
+              //function(watchExp, listener,..
+              //17788
               scope.$watch(interpolateFn, function interpolateFnWatchAction(value) {
                 node[0].nodeValue = value;
               });
@@ -10868,7 +10896,7 @@ function $ControllerProvider() {
    *    the names and the values are the constructors.
    * @param {Function|Array} constructor Controller constructor fn (optionally decorated with DI
    *    annotations in the array notation 数组注解).
-
+     注册Controller
    */
   this.register = function(name, constructor) {
     assertNotHasOwnProperty(name, 'controller');
@@ -10976,7 +11004,11 @@ function $ControllerProvider() {
         }
 
         var instantiate;
+        //直接返回了
         return instantiate = extend(function $controllerInit() {
+
+          //真正调用controller函数的地方
+          //invoke(fn, self, locals, serviceName) 
           var result = $injector.invoke(expression, instance, locals, constructor);
           if (result !== instance && (isObject(result) || isFunction(result))) {
             instance = result;
@@ -16677,7 +16709,10 @@ function $ParseProvider() {
     }
 
     function addInterceptor(parsedExpression, interceptorFn) {
+      
+      //如果没有interceptorFn 那就直接返回parsedExpression
       if (!interceptorFn) return parsedExpression;
+      
       var watchDelegate = parsedExpression.$$watchDelegate;
       var useInputs = false;
 
@@ -17607,8 +17642,10 @@ function $RootScopeProvider() {
         } else {
           // Only create a child scope class if somebody asks for one,
           // but cache it to allow the VM to optimize lookups.
+          //没定义$$ChildScope方法的话就定义下
           if (!this.$$ChildScope) {
             //定义ChildScope方法
+            //里面的原型指向this
             this.$$ChildScope = createChildScopeClass(this);
           }
           child = new this.$$ChildScope(); //实例化一下
@@ -17778,6 +17815,8 @@ function $RootScopeProvider() {
         // we use unshift since we use a while loop in $digest for speed.
         // the while loop reads in reverse order.
         array.unshift(watcher);
+
+        //添加watcherCount
         incrementWatchersCount(this, 1);
 
         //注销
@@ -18111,6 +18150,7 @@ function $RootScopeProvider() {
        * ```
        *
        */
+       /* 消化*/
       $digest: function() {
         var watch, value, last, fn, get,
             watchers,
@@ -26272,6 +26312,7 @@ var ngCloakDirective = ngDirective({
  *</example>
 
  */
+ //controller指令的scope属性为true
 var ngControllerDirective = [function() {
   return {
     restrict: 'A',
