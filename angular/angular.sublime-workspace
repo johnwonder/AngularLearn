@@ -19,23 +19,6 @@
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
-		},
-		{
-			"file": "/Users/zhangjiong/HexoSource/package.json",
-			"settings":
-			{
-				"buffer_size": 481,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/Users/zhangjiong/code/AngularLearn/transclude/transclude1.js",
-			"settings":
-			{
-				"buffer_size": 2507,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
 		}
 	],
 	"build_system": "",
@@ -70,12 +53,13 @@
 	},
 	"expanded_folders":
 	[
-		"/Users/zhangjiong/HexoSource/node_modules/abbrev",
 		"/Users/zhangjiong/code/hexoNew",
 		"/Users/zhangjiong/code/hexoNew/source"
 	],
 	"file_history":
 	[
+		"/Users/zhangjiong/code/AngularLearn/transclude/transclude1.js",
+		"/Users/zhangjiong/HexoSource/package.json",
 		"/Users/zhangjiong/code/AngularLearn/js/angular.js",
 		"/Users/zhangjiong/Downloads/build.xml",
 		"/Users/zhangjiong/code/helloworld/helloworld/ViewController.h",
@@ -97,6 +81,8 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"parseProvider",
+			"rootscopeProvider",
 			"createInjector",
 			"setupModuleLoader",
 			"createInjector",
@@ -222,9 +208,7 @@
 			"transcludeOnThisElement",
 			"transcludeFn",
 			"templateOnThisElement",
-			"hasTranscludeDirective",
-			"transcludeOnThisElement",
-			"createBoundTranscludeFn"
+			"hasTranscludeDirective"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -270,8 +254,8 @@
 						"selection":
 						[
 							[
-								158374,
-								158374
+								595584,
+								595584
 							]
 						],
 						"settings":
@@ -281,70 +265,10 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 103757.0,
+						"translation.y": 346050.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "/Users/zhangjiong/HexoSource/package.json",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 481,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								232,
-								241
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JSON.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "/Users/zhangjiong/code/AngularLearn/transclude/transclude1.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2507,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 721.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
 					"type": "text"
 				}
 			]

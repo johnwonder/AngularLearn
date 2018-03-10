@@ -10353,6 +10353,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
               //主要是interpolateFn
               //function(watchExp, listener,..
               //17788
+              //返回interpolateFn的watchDelegate
               scope.$watch(interpolateFn, function interpolateFnWatchAction(value) {
                 node[0].nodeValue = value;
               });
@@ -15437,6 +15438,7 @@ function isConstant(ast) {
   return ast.constant;
 }
 
+//astBuilder就是ast
 function ASTCompiler(astBuilder, $filter) {
   this.astBuilder = astBuilder;
   this.$filter = $filter;
@@ -16366,6 +16368,7 @@ var Parser = function(lexer, $filter, options) {
   this.$filter = $filter;
   this.options = options;
   this.ast = new AST(lexer, options);
+  //根据是否csp 来定义astCompiler
   this.astCompiler = options.csp ? new ASTInterpreter(this.ast, $filter) :
                                    new ASTCompiler(this.ast, $filter);
 };
@@ -16529,6 +16532,7 @@ function $ParseProvider() {
           exp = exp.trim();
           cacheKey = exp;
 
+          //默认是cacheDefault
           var cache = (expensiveChecks ? cacheExpensive : cacheDefault);
           parsedExpression = cache[cacheKey];
 
@@ -16538,12 +16542,13 @@ function $ParseProvider() {
               exp = exp.substring(2);
             }
             var parseOptions = expensiveChecks ? $parseOptionsExpensive : $parseOptions;
+            //真正用到lexer是在Parser里
             var lexer = new Lexer(parseOptions);
             var parser = new Parser(lexer, $filter, parseOptions);
             parsedExpression = parser.parse(exp);
             if (parsedExpression.constant) {
               parsedExpression.$$watchDelegate = constantWatchDelegate;
-            } else if (oneTime) {
+            } else if (oneTime) {//一次
               parsedExpression.$$watchDelegate = parsedExpression.literal ?
                   oneTimeLiteralWatchDelegate : oneTimeWatchDelegate;
             } else if (parsedExpression.inputs) {
@@ -16596,7 +16601,7 @@ function $ParseProvider() {
 
       if (typeof newValue === 'object') {
 
-        // attempt to convert the value to a primitive type
+        // attempt to convert the value to a primitive(原始) type
         // TODO(docs): add a note to docs that by implementing valueOf even objects and arrays can
         //             be cheaply dirty-checked
         newValue = getValueOf(newValue);
@@ -17770,7 +17775,8 @@ function $RootScopeProvider() {
        * ```
        *
        *
-       *
+       * watchExp 可以时函数或者是string
+         如果watchExp返回值改变那么会触发listener
        * @param {(function()|string)} watchExpression Expression that is evaluated on each
        *    {@link ng.$rootScope.Scope#$digest $digest} cycle. A change in the return value triggers
        *    a call to the `listener`.
@@ -17854,6 +17860,7 @@ function $RootScopeProvider() {
        * @returns {function()} Returns a de-registration function for all listeners.
        */
       $watchGroup: function(watchExpressions, listener) {
+        //定义放置oldValue和newValue的数组
         var oldValues = new Array(watchExpressions.length);
         var newValues = new Array(watchExpressions.length);
         var deregisterFns = [];
