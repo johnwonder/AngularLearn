@@ -15,7 +15,7 @@
 			"file": "angular.js",
 			"settings":
 			{
-				"buffer_size": 1212037,
+				"buffer_size": 1214698,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -53,7 +53,11 @@
 	},
 	"expanded_folders":
 	[
-		"/Users/zhangjiong/code/hexoNew",
+		"/Users/zhangjiong/code/hexoNew/node_modules",
+		"/Users/zhangjiong/code/hexoNew/node_modules/bluebird/js/release",
+		"/Users/zhangjiong/code/hexoNew/node_modules/hexo-fs/lib",
+		"/Users/zhangjiong/code/hexoNew/node_modules/type-check/lib",
+		"/Users/zhangjiong/code/hexoNew/node_modules/yargs",
 		"/Users/zhangjiong/code/hexoNew/source"
 	],
 	"file_history":
@@ -78,9 +82,44 @@
 	},
 	"find_state":
 	{
-		"case_sensitive": false,
+		"case_sensitive": true,
 		"find_history":
 		[
+			"expressionInputDirtyCheck",
+			"watchDelegate",
+			"expressionInputDirtyCheck",
+			"oneTime",
+			"watchDelegate",
+			"addTextInterpolateDirective",
+			"collectDirectives",
+			"watchDelegate",
+			"Lexer",
+			"AST",
+			"ASTCompiler",
+			"AST",
+			"Parser",
+			"Lexer",
+			"parseProvider",
+			"interpolateProvider",
+			"Parser",
+			"Lexer",
+			"cacheDefault",
+			"parseProvider",
+			"nextTick",
+			"scheduleProcessQueue",
+			"parseProvider",
+			"interpolateProvider",
+			"$watchGroup",
+			"expressions",
+			"interpolateProvider",
+			"addTextInterpolateDirective",
+			"rootScopeProvider",
+			"addTextInterpolateDirective",
+			"interpolateProvider",
+			"parseFns",
+			"interpolateProvider",
+			"addTextInterpolateDirective",
+			"collectDirectives",
 			"parseProvider",
 			"rootscopeProvider",
 			"createInjector",
@@ -173,42 +212,7 @@
 			"applyDirectivesToNode",
 			"compileNode",
 			"applyDirectivesToNode",
-			"$element",
-			"controllersBoundTransclude",
-			"compilationGenerator",
-			"applyDirectivesToNode",
-			"controllersBoundTransclude",
-			"ngTransclude",
-			"controllersBoundTransclude",
-			"ngTransclude",
-			"controllersBoundTransclude",
-			"applyDirectivesToNode",
-			"ngTransclude",
-			"boundTransclude",
-			"$$boundTransclude",
-			"controllersBoundTransclude",
-			"applyDirectivesToNode",
-			"controllersBoundTransclude",
-			"applyDirectivesToNode",
-			"createBoundTranscludeFn",
-			"wrapTemplate",
-			"applyDirectivesToNode",
-			"compileNode",
-			"element",
-			"templateAttrs",
-			"mergetemplate",
-			"SIMPLE_ATTR_NAME",
-			"Attributes",
-			"applyDirectivesToNode",
-			"ngTransclude",
-			"applyDirectivesToNode",
-			"childTranscludeFn",
-			"transcludeOnThisElement",
-			"applyDirectivesToNode",
-			"transcludeOnThisElement",
-			"transcludeFn",
-			"templateOnThisElement",
-			"hasTranscludeDirective"
+			"$element"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -220,7 +224,7 @@
 		"reverse": false,
 		"show_context": true,
 		"use_buffer2": true,
-		"whole_word": true,
+		"whole_word": false,
 		"wrap": true
 	},
 	"folders":
@@ -247,15 +251,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1212037,
+						"buffer_size": 1214698,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								595584,
-								595584
+								597361,
+								597361
 							]
 						],
 						"settings":
@@ -265,7 +269,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 346050.0,
+						"translation.y": 340158.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,

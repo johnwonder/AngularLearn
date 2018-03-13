@@ -15974,6 +15974,7 @@ ASTCompiler.prototype = {
   },
 
   current: function() {
+    //assign 
     return this.state[this.state.computing];
   }
 };
