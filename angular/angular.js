@@ -14758,6 +14758,7 @@ Lexer.prototype = {
       } else if (this.isIdentifierStart(this.peekMultichar())) {
         this.readIdent();
       } else if (this.is(ch, '(){}[].,;:?')) { //判断index是否为-1
+        //{index: 6, text: "."}
         this.tokens.push({index: this.index, text: ch});
         this.index++;
       } else if (this.isWhitespace(ch)) {
@@ -14835,6 +14836,7 @@ Lexer.prototype = {
       return ch;
     }
     //http://www.cnblogs.com/lanelim/p/4964947.html
+    //特殊字符 例如
     var cp1 = ch.charCodeAt(0);
     var cp2 = peek.charCodeAt(0);
     if (cp1 >= 0xD800 && cp1 <= 0xDBFF && cp2 >= 0xDC00 && cp2 <= 0xDFFF) {
@@ -14894,11 +14896,13 @@ Lexer.prototype = {
     this.index += this.peekMultichar().length;
     while (this.index < this.text.length) {
       var ch = this.peekMultichar();
+      //不是字符标识 那就跳出 比如.
       if (!this.isIdentifierContinue(ch)) {
         break;
       }
       this.index += ch.length;
     }
+    // {index: 0, text: "person", identifier: true}
     this.tokens.push({
       index: start,
       text: this.text.slice(start, this.index),
@@ -14991,6 +14995,7 @@ AST.prototype = {
   program: function() {
     var body = [];
     while (true) {
+      //person.name peek不到});]
       if (this.tokens.length > 0 && !this.peek('}', ')', ';', ']'))
         body.push(this.expressionStatement());
       if (!this.expect(';')) { //碰到;跳出循环
@@ -15003,6 +15008,7 @@ AST.prototype = {
     return { type: AST.ExpressionStatement, expression: this.filterChain() };
   },
 
+  //筛选链 
   filterChain: function() {
     var left = this.expression();
     var token;
@@ -15023,7 +15029,7 @@ AST.prototype = {
     }
     return result;
   },
-
+  //三元操作
   ternary: function() {
     var test = this.logicalOR();
     var alternate;
@@ -15053,7 +15059,7 @@ AST.prototype = {
     }
     return left;
   },
-
+  //等于关系
   equality: function() {
     var left = this.relational();
     var token;
@@ -15130,6 +15136,7 @@ AST.prototype = {
         this.consume(']');
       } else if (next.text === '.') {
         //成员表达式
+        //把primary赋值给primary
         primary = { type: AST.MemberExpression, object: primary, property: this.identifier(), computed: false };
       } else {
         this.throwError('IMPOSSIBLE');
@@ -15253,7 +15260,10 @@ AST.prototype = {
     }
     return this.tokens[0];
   },
-
+ 
+  //是否能根据传入的字符获取到第一个token
+  //如果能那么返回获取到的字符
+  //不能就返回false 
   peek: function(e1, e2, e3, e4) {
     return this.peekAhead(0, e1, e2, e3, e4);
   },
@@ -15279,6 +15289,7 @@ AST.prototype = {
     return false;
   },
 
+  //内部引用
   selfReferential: {
     'this': {type: AST.ThisExpression },
     '$locals': {type: AST.LocalsExpression }
