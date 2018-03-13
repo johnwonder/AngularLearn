@@ -15474,7 +15474,7 @@ ASTCompiler.prototype = {
     if ((assignable = assignableAST(ast))) {
       this.state.computing = 'assign';
       var result = this.nextId();
-      this.recurse(assignable, result);
+      this.recurse(assignable, result);//只传两个参数
       this.return_(result);
       extra = 'fn.assign=' + this.generateFunction('assign', 's,v,l');
     }
