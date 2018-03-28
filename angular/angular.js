@@ -14669,6 +14669,7 @@ function getStringValue(name) {
   return name + '';
 }
 
+//确认是否是安全的对象
 function ensureSafeObject(obj, fullExpression) {
   //极好的check
   // nifty check if obj is Function that is fast and works across iframes and other contexts
@@ -14687,7 +14688,7 @@ function ensureSafeObject(obj, fullExpression) {
       throw $parseMinErr('isecdom',
           'Referencing DOM nodes in Angular expressions is disallowed! Expression: {0}',
           fullExpression);
-    } else if (// block Object so that we can't get hold of dangerous Object.* methods
+    } else if (// block Object so that we can't get hold of(抓到) dangerous Object.* methods
         obj === Object) {
       throw $parseMinErr('isecobj',
           'Referencing Object in Angular expressions is disallowed! Expression: {0}',
@@ -14701,6 +14702,7 @@ var CALL = Function.prototype.call;
 var APPLY = Function.prototype.apply;
 var BIND = Function.prototype.bind;
 
+//确认是否是安全的函数
 function ensureSafeFunction(obj, fullExpression) {
   if (obj) {
     if (obj.constructor === obj) {
@@ -14998,7 +15000,7 @@ AST.prototype = {
       //person.name peek不到});]
       if (this.tokens.length > 0 && !this.peek('}', ')', ';', ']'))
         body.push(this.expressionStatement());
-      if (!this.expect(';')) { //碰到;跳出循环
+      if (!this.expect(';')) { //没有碰到;跳出循环
         return { type: AST.Program, body: body};
       }
     }
@@ -15311,6 +15313,8 @@ function isStateless($filter, filterName) {
   return !fn.$stateful;
 }
 
+//此函数的目的在于表明语法分析树是否是常量
+//且赋值toWatch
 function findConstantAndWatchExpressions(ast, $filter) {
   var allConstants;
   var argsToWatch;
@@ -15320,7 +15324,7 @@ function findConstantAndWatchExpressions(ast, $filter) {
     forEach(ast.body, function(expr) {
       findConstantAndWatchExpressions(expr.expression, $filter);
       allConstants = allConstants && expr.expression.constant;
-    });
+    }); //只要一个不为true 那么就肯定不为true
     ast.constant = allConstants;
     break;
   case AST.Literal:
@@ -15474,7 +15478,7 @@ ASTCompiler.prototype = {
     if ((assignable = assignableAST(ast))) {
       this.state.computing = 'assign';
       var result = this.nextId();
-      this.recurse(assignable, result);//只传两个参数
+      this.recurse(assignable, result);
       this.return_(result);
       extra = 'fn.assign=' + this.generateFunction('assign', 's,v,l');
     }
@@ -15577,6 +15581,9 @@ ASTCompiler.prototype = {
     recursionFn = recursionFn || noop;
     if (!skipWatchIdCheck && isDefined(ast.watchId)) {
       intoId = intoId || this.nextId();
+      
+      //body 压入if语句
+      //会加入if else
       this.if_('i',
         this.lazyAssign(intoId, this.computedMember('i', ast.watchId)),
         this.lazyRecurse(ast, intoId, nameId, recursionFn, create, true)
@@ -15854,7 +15861,7 @@ ASTCompiler.prototype = {
   return_: function(id) {
     this.current().body.push('return ', id, ';');
   },
-
+   //body push
   if_: function(test, alternate, consequent) {
     if (test === true) {
       alternate();
@@ -15941,6 +15948,7 @@ ASTCompiler.prototype = {
     };
   },
 
+  //延迟赋值，返回一个方法
   lazyAssign: function(id, value) {
     var self = this;
     return function() {
@@ -15974,7 +15982,6 @@ ASTCompiler.prototype = {
   },
 
   current: function() {
-    //assign 
     return this.state[this.state.computing];
   }
 };
@@ -16502,6 +16509,10 @@ function $ParseProvider() {
   *   a valid identifier start character.
   * @param {function=} identifierContinue The function that will decide whether the given character is
   *   a valid identifier continue character.
+  */
+  /*
+  https://www.cnblogs.com/lightsun/p/6362490.html#top
+  https://yq.aliyun.com/ziliao/40516
   */
   this.setIdentifierFns = function(identifierStart, identifierContinue) {
     identStart = identifierStart;
