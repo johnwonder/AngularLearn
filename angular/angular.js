@@ -14738,6 +14738,7 @@ var ESCAPE = {"n":"\n", "f":"\f", "r":"\r", "t":"\t", "v":"\v", "'":"'", '"':'"'
 /**
  * @constructor
  https://code.angularjs.org/1.6.4/docs/guide/expression
+ Lexer直接面对字符串text，输出tokens数组。具体地，通过Lexer.prototype.lex原型函数来实现
  */
 var Lexer = function(options) {
   this.options = options;
@@ -14746,6 +14747,7 @@ var Lexer = function(options) {
 Lexer.prototype = {
   constructor: Lexer,
   //http://www.cnblogs.com/web2-developer/p/angular-10.html#top
+  //输出tokens数组
   lex: function(text) {
     this.text = text;
     this.index = 0;
@@ -14807,7 +14809,7 @@ Lexer.prototype = {
         this.options.isIdentifierStart(ch, this.codePointAt(ch)) :
         this.isValidIdentifierStart(ch);
   },
-  //标识符
+  //是否是有效的开始标识符
   isValidIdentifierStart: function(ch) {
     return ('a' <= ch && ch <= 'z' ||
             'A' <= ch && ch <= 'Z' ||
@@ -14985,6 +14987,7 @@ AST.prototype = {
     this.text = text;
     this.tokens = this.lexer.lex(text); //分析得到tokens列表
 
+    //program计算出来的是{}
     var value = this.program();
 
     if (this.tokens.length !== 0) {
@@ -15005,7 +15008,7 @@ AST.prototype = {
       }
     }
   },
-
+  //表达式声明
   expressionStatement: function() {
     return { type: AST.ExpressionStatement, expression: this.filterChain() };
   },
@@ -15434,7 +15437,7 @@ function getInputs(body) {
 function isAssignable(ast) {
   return ast.type === AST.Identifier || ast.type === AST.MemberExpression;
 }
-
+//body长度为1 且body 表达式的type 是identifier 或者member
 function assignableAST(ast) {
   if (ast.body.length === 1 && isAssignable(ast.body[0].expression)) {
     return {type: AST.AssignmentExpression, left: ast.body[0].expression, right: {type: AST.NGValueParameter}, operator: '='};
@@ -15463,6 +15466,7 @@ ASTCompiler.prototype = {
   compile: function(expression, expensiveChecks) {
     var self = this;
     var ast = this.astBuilder.ast(expression);
+    //状态机
     this.state = {
       nextId: 0,
       filters: {},
@@ -15480,6 +15484,7 @@ ASTCompiler.prototype = {
       var result = this.nextId();
       this.recurse(assignable, result);
       this.return_(result);
+      //
       extra = 'fn.assign=' + this.generateFunction('assign', 's,v,l');
     }
     var toWatch = getInputs(ast.body);
@@ -15583,7 +15588,7 @@ ASTCompiler.prototype = {
       intoId = intoId || this.nextId();
       
       //body 压入if语句
-      //会加入if else
+      //会加入if(i) else
       this.if_('i',
         this.lazyAssign(intoId, this.computedMember('i', ast.watchId)),
         this.lazyRecurse(ast, intoId, nameId, recursionFn, create, true)
@@ -16550,6 +16555,7 @@ function $ParseProvider() {
 
       expensiveChecks = expensiveChecks || runningChecksEnabled;
 
+      //判断表达式类型
       switch (typeof exp) {
         case 'string':
           exp = exp.trim();
@@ -16736,6 +16742,7 @@ function $ParseProvider() {
       }, listener, objectEquality);
     }
 
+    //添加拦截器
     function addInterceptor(parsedExpression, interceptorFn) {
       
       //如果没有interceptorFn 那就直接返回parsedExpression
