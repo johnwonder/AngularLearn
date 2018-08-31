@@ -2090,6 +2090,7 @@ function setupModuleLoader(window) {
     return obj[name] || (obj[name] = factory());
   }
 
+// window 有了angular变量
   var angular = ensure(window, 'angular', Object);
 
   // We need to expose `angular.$$minErr` to modules such as `ngResource` that reference it during bootstrap

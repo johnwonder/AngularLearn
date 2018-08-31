@@ -2932,6 +2932,7 @@ function jqLiteWrapNode(node, wrapper) {
   var parent = node.parentNode;
 
   if (parent) {
+    //replaceChild(newnode,oldnode)
     parent.replaceChild(wrapper, node);
   }
 
@@ -8440,11 +8441,11 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
     return compile;
 
     //================================
-
+    //compile -
     function compile($compileNodes, transcludeFn, maxPriority, ignoreDirective,
                         previousCompileContext) {
       if (!($compileNodes instanceof jqLite)) {
-        // jquery always rewraps, whereas we need to preserve the original selector so that we can
+        // jquery always rewraps, whereas we need to preserve(保存) the original selector so that we can
         // modify it.
         $compileNodes = jqLite($compileNodes);
       }
@@ -8457,6 +8458,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         var domNode = $compileNodes[i];
 
         if (domNode.nodeType === NODE_TYPE_TEXT && domNode.nodeValue.match(NOT_EMPTY) /* non-empty */) {
+          //包装domNode 要么替换要么append
           jqLiteWrapNode(domNode, $compileNodes[i] = window.document.createElement('span'));
         }
       }
@@ -8620,7 +8622,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
           if (nodeLinkFn) {
             if (nodeLinkFn.scope) {
-              childScope = scope.$new();
+              childScope = scope.$new();//这里加上了childScope
               compile.$$addScopeInfo(jqLite(node), childScope);
             } else {
               childScope = scope;
@@ -8737,6 +8739,9 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
                   attrs[nName] = true; // presence means true
                 }
             }
+             //对于属性值要处理是否修改和监听变化，例如{{name}}就需要处理：
+            //value="Hello, {{name}}"  
+            //http://liuwanlin.info/angularjsyuan-ma-yue-du-2bian-yi-lian-jie-guo-cheng/
             addAttrInterpolateDirective(node, directives, value, nName, isNgAttr);
             addDirective(directives, nName, 'A', maxPriority, ignoreDirective, attrStartName,
                           attrEndName);
@@ -9767,10 +9772,13 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
             // we don't have a parent and thus need to add the class during linking fn.
             if (hasCompileParent) compile.$$addBindingClass(templateNodeParent);
 
+            //invokeLinkFn时调用
             return function textInterpolateLinkFn(scope, node) {
               var parent = node.parent();
               if (!hasCompileParent) compile.$$addBindingClass(parent);
               compile.$$addBindingInfo(parent, interpolateFn.expressions);
+              
+                //
               scope.$watch(interpolateFn, function interpolateFnWatchAction(value) {
                 node[0].nodeValue = value;
               });
@@ -10951,7 +10959,7 @@ function $HttpProvider() {
      *
      * The $http API is based on the {@link ng.$q deferred/promise APIs} exposed by
      * the $q service. While for simple usage patterns this doesn't matter much, for advanced usage
-     * it is important to familiarize yourself with these APIs and the guarantees they provide.
+     * it is important to familiarize（熟知） yourself with these APIs and the guarantees（担保） they provide.
      *
      *
      * ## General usage
@@ -11272,7 +11280,7 @@ function $HttpProvider() {
      * - [JSON vulnerability](http://haacked.com/archive/2008/11/20/anatomy-of-a-subtle-json-vulnerability.aspx)
      * - [XSRF](http://en.wikipedia.org/wiki/Cross-site_request_forgery)
      *
-     * Both server and the client must cooperate in order to eliminate these threats. Angular comes
+     * Both server and the client must cooperate(相互合作) in order to eliminate（排除） these threats（威胁）. Angular comes
      * pre-configured with strategies that address these issues, but for this to work backend server
      * cooperation is required.
      *
@@ -12400,6 +12408,7 @@ function $InterpolateProvider() {
           }
           exp = text.substring(startIndex + startSymbolLength, endIndex);
           expressions.push(exp);
+          //调用parseProvider里的parse函数
           parseFns.push($parse(exp, parseStringifyInterceptor));
           index = endIndex + endSymbolLength;
           expressionPositions.push(concat.length);
@@ -12426,9 +12435,11 @@ function $InterpolateProvider() {
       if (!mustHaveExpression || expressions.length) {
         var compute = function(values) {
           for (var i = 0, ii = expressions.length; i < ii; i++) {
+            //要么全部要么全不要
             if (allOrNothing && isUndefined(values[i])) return;
             concat[expressionPositions[i]] = values[i];
           }
+          //数组合并
           return concat.join('');
         };
 
@@ -14607,7 +14618,8 @@ AST.prototype = {
     }
     return token;
   },
-
+ 
+ //获取tokens数组的第一个元素
   peekToken: function() {
     if (this.tokens.length === 0) {
       throw $parseMinErr('ueoe', 'Unexpected end of expression: {0}', this.text);
@@ -14807,6 +14819,7 @@ function ASTCompiler(astBuilder, $filter) {
 ASTCompiler.prototype = {
   compile: function(expression, expensiveChecks) {
     var self = this;
+    //根据表达式生成表达式树
     var ast = this.astBuilder.ast(expression);
     this.state = {
       nextId: 0,
@@ -14819,12 +14832,12 @@ ASTCompiler.prototype = {
     findConstantAndWatchExpressions(ast, self.$filter);
     var extra = '';
     var assignable;
-    this.stage = 'assign';
+    this.stage = 'assign';//阶段
     if ((assignable = assignableAST(ast))) {
       this.state.computing = 'assign';
       var result = this.nextId();
       this.recurse(assignable, result);
-      this.return_(result);
+      this.return_(result);//scope, value, locals
       extra = 'fn.assign=' + this.generateFunction('assign', 's,v,l');
     }
     var toWatch = getInputs(ast.body);
@@ -14846,8 +14859,8 @@ ASTCompiler.prototype = {
       // The build and minification steps remove the string "use strict" from the code, but this is done using a regex.
       // This is a workaround for this until we do a better job at only removing the prefix only when we should.
       '"' + this.USE + ' ' + this.STRICT + '";\n' +
-      this.filterPrefix() +
-      'var fn=' + this.generateFunction('fn', 's,l,a,i') +
+      this.filterPrefix() +//scope, locals, assign, inputs
+      'var fn=' + this.generateFunction('fn', 's,l,a,i') + //生成函数 函数名 加上参数
       extra +
       this.watchFns() +
       'return fn;';
@@ -14869,7 +14882,7 @@ ASTCompiler.prototype = {
           ensureSafeFunction,
           getStringValue,
           ensureSafeAssignContext,
-          ifDefined,
+          ifDefined,//函数 判断是否为undefined
           plusFn,
           expression);
     /* jshint +W054 */
@@ -14896,6 +14909,8 @@ ASTCompiler.prototype = {
     return result.join('');
   },
 
+  //name = fn
+  //state数组里 定义了fn  
   generateFunction: function(name, params) {
     return 'function(' + params + '){' +
         this.varsPrefix(name) +
@@ -14912,7 +14927,7 @@ ASTCompiler.prototype = {
     if (parts.length) return 'var ' + parts.join(',') + ';';
     return '';
   },
-
+  //去状态机数组里获取vars 并用逗号join
   varsPrefix: function(section) {
     return this.state[section].vars.length ? 'var ' + this.state[section].vars.join(',') + ';' : '';
   },
@@ -15336,6 +15351,8 @@ function ASTInterpreter(astBuilder, $filter) {
 ASTInterpreter.prototype = {
   compile: function(expression, expensiveChecks) {
     var self = this;
+    //构造抽象语法树(Abstract Syntax Tree)也称为AST语法树
+    //http://www.iteye.com/news/30731
     var ast = this.astBuilder.ast(expression);
     this.expression = expression;
     this.expensiveChecks = expensiveChecks;
@@ -15723,6 +15740,7 @@ ASTInterpreter.prototype = {
 /**
  * @constructor
  */
+ //Parser里定义了 lexer ast astCompiler
 var Parser = function(lexer, $filter, options) {
   this.lexer = lexer;
   this.$filter = $filter;
@@ -15901,6 +15919,7 @@ function $ParseProvider() {
             var parseOptions = expensiveChecks ? $parseOptionsExpensive : $parseOptions;
             var lexer = new Lexer(parseOptions);
             var parser = new Parser(lexer, $filter, parseOptions);
+            /*  解析开始  */
             parsedExpression = parser.parse(exp);
             if (parsedExpression.constant) {
               parsedExpression.$$watchDelegate = constantWatchDelegate;
@@ -15915,6 +15934,8 @@ function $ParseProvider() {
             }
             cache[cacheKey] = parsedExpression;
           }
+          //添加拦截器
+          //regularInterceptedExpression 
           return addInterceptor(parsedExpression, interceptorFn);
 
         case 'function':
@@ -16068,12 +16089,17 @@ function $ParseProvider() {
         return parsedExpression(scope);
       }, listener, objectEquality);
     }
-
+    
+    //interceptorFn     parseStringifyInterceptor
+    //没有interceptorFn 那么直接返回 比如parsedExpression是function
     function addInterceptor(parsedExpression, interceptorFn) {
       if (!interceptorFn) return parsedExpression;
+       //watchDelegate  有可能为undefined
       var watchDelegate = parsedExpression.$$watchDelegate;
       var useInputs = false;
 
+
+        //watchDelegate 为undefined那么 就是regularWatch
       var regularWatch =
           watchDelegate !== oneTimeLiteralWatchDelegate &&
           watchDelegate !== oneTimeWatchDelegate;
@@ -16094,9 +16120,10 @@ function $ParseProvider() {
           parsedExpression.$$watchDelegate !== inputsWatchDelegate) {
         fn.$$watchDelegate = parsedExpression.$$watchDelegate;
       } else if (!interceptorFn.$stateful) {
-        // If there is an interceptor, but no watchDelegate then treat the interceptor like
+        // If there is an interceptor, but no watchDelegate then treat(对待) the interceptor like
         // we treat filters - it is assumed to be a pure function unless flagged with $stateful
         fn.$$watchDelegate = inputsWatchDelegate;
+        //解析过的表达式如果没有输入那么就用useInputs
         useInputs = !parsedExpression.inputs;
         fn.inputs = parsedExpression.inputs ? parsedExpression.inputs : [parsedExpression];
       }
@@ -17139,10 +17166,14 @@ function $RootScopeProvider() {
        *     comparing for reference equality.
        * @returns {function()} Returns a deregistration function for this listener.
        */
+       //放入$$watchers数组 供 digest用
       $watch: function(watchExp, listener, objectEquality, prettyPrintExpression) {
         var get = $parse(watchExp);
 
+        //通过extend函数扩展后有了$$watchDelegate函数
+        //直接返回 执行$$watchDelegate的结果
         if (get.$$watchDelegate) {
+          //this为scope
           return get.$$watchDelegate(this, listener, objectEquality, get, watchExp);
         }
         var scope = this,
@@ -17167,6 +17198,7 @@ function $RootScopeProvider() {
         // we use unshift since we use a while loop in $digest for speed.
         // the while loop reads in reverse order.
         array.unshift(watcher);
+        //增加watchersCount
         incrementWatchersCount(this, 1);
 
         return function deregisterWatch() {
@@ -17543,6 +17575,7 @@ function $RootScopeProvider() {
           do { // "traverse the scopes" loop
             if ((watchers = current.$$watchers)) {
               // process our watches
+              //处理watches
               length = watchers.length;
               while (length--) {
                 try {
@@ -17718,6 +17751,7 @@ function $RootScopeProvider() {
        * @returns {*} The result of evaluating the expression.
        */
       $eval: function(expr, locals) {
+        //expr 是function的话 那就直接返回function
         return $parse(expr)(this, locals);
       },
 

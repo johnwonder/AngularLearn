@@ -1,9 +1,13 @@
+
+// angular从 ensure(window, 'angular', Object);获得
+
 var app=angular.module('myapp',[]);
 
 app.run(function($rootScope){
 	$rootScope.name="Ari Lerner";
 });
 
+//invokeLaterAndSetModuleName
 app.controller('MyController',function($scope,$cacheFactory){
 
  $scope.person ={name:"Ari" }; 
