@@ -10953,7 +10953,7 @@ function $ControllerProvider() {
      */
     return function $controller(expression, locals, later, ident) {
       // PRIVATE API:
-      //   param `later` --- indicates that the controller's constructor is invoked at a later time.
+      //   param `later` --- indicates(表明) that the controller's constructor is invoked at a later time.
       //                     If true, $controller will allocate the object with the correct
       //                     prototype chain, but will not invoke the controller until a returned
       //                     callback is invoked.
@@ -11300,6 +11300,7 @@ function defaultHttpResponseTransform(data, headers) {
   return data;
 }
 
+//判断是否是json
 function isJsonLike(str) {
     var jsonStart = str.match(JSON_START);
     return jsonStart && JSON_ENDS[jsonStart[0]].test(str);
@@ -11448,7 +11449,7 @@ function $HttpProvider() {
       common: {
         'Accept': 'application/json, text/plain, */*'
       },
-      post:   shallowCopy(CONTENT_TYPE_APPLICATION_JSON),
+      post:   shallowCopy(CONTENT_TYPE_APPLICATION_JSON),//浅拷贝
       put:    shallowCopy(CONTENT_TYPE_APPLICATION_JSON),
       patch:  shallowCopy(CONTENT_TYPE_APPLICATION_JSON)
     },
@@ -11487,6 +11488,7 @@ function $HttpProvider() {
     return useApplyAsync;
   };
 
+ //遗留的Promise
   var useLegacyPromise = true;
   /**
    * @ngdoc method
@@ -11545,6 +11547,7 @@ function $HttpProvider() {
     var reversedInterceptors = [];
 
     forEach(interceptorFactories, function(interceptorFactory) {
+      //unshift() 方法可向数组的开头添加一个或更多元素，并返回新的长度
       reversedInterceptors.unshift(isString(interceptorFactory)
           ? $injector.get(interceptorFactory) : $injector.invoke(interceptorFactory));
     });
@@ -11572,7 +11575,7 @@ function $HttpProvider() {
      *
      * The $http API is based on the {@link ng.$q deferred/promise APIs} exposed by
      * the $q service. While for simple usage patterns this doesn't matter much, for advanced usage
-     * it is important to familiarize yourself with these APIs and the guarantees they provide.
+     * it is important to familiarize yourself with these APIs and the guarantees(保证) they provide.
      *
      *
      * ## General usage
@@ -11796,7 +11799,7 @@ function $HttpProvider() {
      *   * Only GET and JSONP requests are cached.
      *   * The cache key is the request URL including search parameters; headers are not considered.
      *   * Cached responses are returned asynchronously, in the same way as responses from the server.
-     *   * If multiple identical requests are made using the same cache, which is not yet populated,
+     *   * If multiple identical(完全一样) requests are made using the same cache, which is not yet populated,
      *     one request will be made to the server and remaining requests will return the same response.
      *   * A cache-control header on the response does not affect if or how responses are cached.
      *
@@ -11869,6 +11872,8 @@ function $HttpProvider() {
      *     };
      *   });
      *
+         //此操作一般在config中
+         //https://blog.csdn.net/u010730126/article/details/51770946
      *   $httpProvider.interceptors.push('myHttpInterceptor');
      *
      *
@@ -11890,7 +11895,7 @@ function $HttpProvider() {
      *
      * When designing web applications, consider security threats from:
      *
-     * - [JSON vulnerability](http://haacked.com/archive/2008/11/20/anatomy-of-a-subtle-json-vulnerability.aspx)
+     * - [JSON vulnerability（劫持）](http://haacked.com/archive/2008/11/20/anatomy-of-a-subtle-json-vulnerability.aspx)
      * - [XSRF](http://en.wikipedia.org/wiki/Cross-site_request_forgery)
      *
      * Both server and the client must cooperate in order to eliminate these threats. Angular comes
@@ -12099,6 +12104,7 @@ function $HttpProvider() {
         throw minErr('$http')('badreq', 'Http request configuration url must be a string.  Received: {0}', requestConfig.url);
       }
 
+      //扩展了requestConfig
       var config = extend({
         method: 'get',
         transformRequest: defaults.transformRequest,
@@ -12210,6 +12216,7 @@ function $HttpProvider() {
         return executeHeaderFns(reqHeaders, shallowCopy(config));
       }
 
+      //放在promise里
       function serverRequest(config) {
         var headers = config.headers;
         var reqData = transformData(config.data, headersGetter(headers), undefined, config.transformRequest);
@@ -12227,6 +12234,7 @@ function $HttpProvider() {
           config.withCredentials = defaults.withCredentials;
         }
 
+         //关键的步骤 发送请求
         // send request
         return sendReq(config, reqData).then(transformResponse, transformResponse);
       }
@@ -12365,6 +12373,7 @@ function $HttpProvider() {
 
 
     function createShortMethodsWithData(name) {
+      //arguments 就是传进来的name参数
       forEach(arguments, function(name) {
         $http[name] = function(url, data, config) {
           return $http(extend({}, config || {}, {
@@ -17049,6 +17058,7 @@ function qFactory(nextTick, exceptionHandler) {
   };
 
   function Promise() {
+    //初始化Promise的状态对象
     this.$$state = { status: 0 };
   }
 
@@ -17059,8 +17069,10 @@ function qFactory(nextTick, exceptionHandler) {
       }
       var result = new Deferred();
 
+
       this.$$state.pending = this.$$state.pending || [];
       this.$$state.pending.push([result, onFulfilled, onRejected, progressBack]);
+      
       if (this.$$state.status > 0) scheduleProcessQueue(this.$$state);
 
       return result.promise;
@@ -17086,6 +17098,7 @@ function qFactory(nextTick, exceptionHandler) {
     };
   }
 
+  //处理的时候pending
   function processQueue(state) {
     var fn, deferred, pending;
 
@@ -17110,6 +17123,7 @@ function qFactory(nextTick, exceptionHandler) {
     }
   }
 
+  //传入promise的state对象
   function scheduleProcessQueue(state) {
     if (state.processScheduled || !state.pending) return;
     state.processScheduled = true;
@@ -17144,8 +17158,11 @@ function qFactory(nextTick, exceptionHandler) {
           this.promise.$$state.status = -1;
           then.call(val, resolvePromise, rejectPromise, simpleBind(this, this.notify));
         } else {
+
+          //更新promise的状态对象
           this.promise.$$state.value = val;
           this.promise.$$state.status = 1;
+          //调度的时候pending为空就返回了
           scheduleProcessQueue(this.promise.$$state);
         }
       } catch (e) {
@@ -17283,10 +17300,14 @@ function qFactory(nextTick, exceptionHandler) {
    * @returns {Promise} Returns a promise of the passed value or promise
    */
 
-
+   //https://blog.csdn.net/ft6302244/article/details/45023531
+   //https://teropa.info/build-your-own-angular/
   var when = function(value, callback, errback, progressBack) {
     var result = new Deferred();
-    result.resolve(value);
+    result.resolve(value); //内部调用$$resolve方法
+
+    //then 方法会把callback放进一个pending数组
+    //then中如果 status >0 那么也会放入queue
     return result.promise.then(callback, errback, progressBack);
   };
 
@@ -17296,7 +17317,7 @@ function qFactory(nextTick, exceptionHandler) {
    * @kind function
    *
    * @description
-   * Alias of {@link ng.$q#when when} to maintain naming consistency with ES6.
+   * Alias of {@link ng.$q#when when} to maintain(保持) naming consistency(一致) with ES6.
    *
    * @param {*} value Value or a promise
    * @param {Function=} successCallback

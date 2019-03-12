@@ -3482,6 +3482,7 @@ function createEventHandler(element, events) {
     };
 
     // Some events have special handlers that wrap the real handler
+    //有些事件 有特殊的handler
     var handlerWrapper = eventFns.specialHandlerWrapper || defaultHandlerWrapper;
 
     // Copy event handlers in case event handlers array is modified during execution.
@@ -3490,6 +3491,8 @@ function createEventHandler(element, events) {
     }
 
     for (var i = 0; i < eventFnsLength; i++) {
+      //判断immediatePropagationStopped 是否为true
+      //调用了stopImmediatePropagation 后为true
       if (!event.isImmediatePropagationStopped()) {
         handlerWrapper(element, event, eventFns[i]);
       }
@@ -3535,7 +3538,7 @@ forEach({
     }
 
     var expandoStore = jqLiteExpandoStore(element, true);
-    var events = expandoStore.events;
+    var events = expandoStore.events;//膨胀存储 多余的存储
     var handle = expandoStore.handle;
 
     if (!handle) {
@@ -3553,6 +3556,7 @@ forEach({
         eventFns = events[type] = [];
         eventFns.specialHandlerWrapper = specialHandlerWrapper;
         if (type !== '$destroy' && !noEventListener) {
+          //element.addEventListener
           addEventListenerFn(element, type, handle);
         }
       }
@@ -3564,6 +3568,8 @@ forEach({
       type = types[i];
       if (MOUSE_EVENT_MAP[type]) {
         addHandler(MOUSE_EVENT_MAP[type], specialMouseHandlerWrapper);
+        
+        //加入eventFns数组
         addHandler(type, undefined, true);
       } else {
         addHandler(type);
@@ -15908,6 +15914,8 @@ function $ParseProvider() {
           exp = exp.trim();
           cacheKey = exp;
 
+          //放入cache 
+          // cacheDefault  :   Object.create(null);
           var cache = (expensiveChecks ? cacheExpensive : cacheDefault);
           parsedExpression = cache[cacheKey];
 
@@ -15932,6 +15940,8 @@ function $ParseProvider() {
             if (expensiveChecks) {
               parsedExpression = expensiveChecksInterceptor(parsedExpression);
             }
+
+            //cache["person.name"] = fn;
             cache[cacheKey] = parsedExpression;
           }
           //添加拦截器
@@ -16104,6 +16114,7 @@ function $ParseProvider() {
           watchDelegate !== oneTimeLiteralWatchDelegate &&
           watchDelegate !== oneTimeWatchDelegate;
 
+          //把执行parsedExpression的结果当作参数传入interceptorFn 
       var fn = regularWatch ? function regularInterceptedExpression(scope, locals, assign, inputs) {
         var value = useInputs && inputs ? inputs[0] : parsedExpression(scope, locals, assign, inputs);
         return interceptorFn(value, scope, locals);
