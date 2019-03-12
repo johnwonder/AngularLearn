@@ -12,10 +12,10 @@
 	"buffers":
 	[
 		{
-			"file": "angular.js",
+			"file": "/Users/zhangjiong/code/AngularLearn/js/angular.js",
 			"settings":
 			{
-				"buffer_size": 1214698,
+				"buffer_size": 1190118,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -53,18 +53,18 @@
 	},
 	"expanded_folders":
 	[
-		"/Users/zhangjiong/code/hexoNew/node_modules",
-		"/Users/zhangjiong/code/hexoNew/node_modules/bluebird/js/release",
-		"/Users/zhangjiong/code/hexoNew/node_modules/hexo-fs/lib",
-		"/Users/zhangjiong/code/hexoNew/node_modules/type-check/lib",
-		"/Users/zhangjiong/code/hexoNew/node_modules/yargs",
-		"/Users/zhangjiong/code/hexoNew/source"
+		"/Users/zhangjiong/code/AngularLearn",
+		"/Users/zhangjiong/code/AngularLearn/js"
 	],
 	"file_history":
 	[
+		"/Users/zhangjiong/code/AngularLearn/js/angular.js",
+		"/Users/zhangjiong/HexoSource/node_modules/asynckit/lib/state.js",
+		"/Users/zhangjiong/HexoSource/node_modules/hexo-renderer-marked/node_modules/bluebird/js/browser/bluebird.core.js",
+		"/Users/zhangjiong/HexoSource/node_modules/bluebird/js/browser/bluebird.js",
+		"/Users/zhangjiong/code/AngularLearn/angular/angular.js",
 		"/Users/zhangjiong/code/AngularLearn/transclude/transclude1.js",
 		"/Users/zhangjiong/HexoSource/package.json",
-		"/Users/zhangjiong/code/AngularLearn/js/angular.js",
 		"/Users/zhangjiong/Downloads/build.xml",
 		"/Users/zhangjiong/code/helloworld/helloworld/ViewController.h",
 		"/Users/zhangjiong/code/angularRead/angular/testTransclude.html"
@@ -85,6 +85,47 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"TestabilityProvider",
+			"testability",
+			"notifyWhenNoOutstandingRequests",
+			"outstandingRequestCallbacks",
+			"completeOutstandingRequest",
+			"$browser",
+			"browserFactory",
+			"browserProvider",
+			"$browserProvider",
+			"$browser",
+			"$$state.status",
+			"processQueue",
+			"$$state",
+			"Promise",
+			"Deferred",
+			"nextTick",
+			"when",
+			"resolve",
+			"scheduleProcessQueue",
+			"processQueue",
+			"Deferred",
+			"simpleBind",
+			"Deferred",
+			"qFactory",
+			"$QProvider",
+			"$q",
+			"HttpProvider",
+			"乘法",
+			"recurse",
+			"return_",
+			"watchId",
+			"assignableAST",
+			"if_",
+			"nextId",
+			"state",
+			"nextId",
+			"findConstantAndWatchExpressions",
+			"assignableAST",
+			"findConstantAndWatchExpressions",
+			"AST",
+			"findConstantAndWatchExpressions",
 			"expressionInputDirtyCheck",
 			"watchDelegate",
 			"expressionInputDirtyCheck",
@@ -171,48 +212,7 @@
 			"addLinkFns",
 			"preLinkFns",
 			"setupControllers",
-			"createInjector",
-			"controllerProvider",
-			"setupControllers",
-			"$transclude",
-			"setupControllers",
-			"controllerProvider",
-			"setupControllers",
-			"applyDirectives",
-			"$transclude",
-			"compile(",
-			"compile",
-			"compilationGenerator",
-			"$compile",
-			"compilationGenerator",
-			"$transclude",
-			"$ngTransclude",
-			"applyDirectivesToNode",
-			"$$boundTransclude",
-			"controllersBoundTransclude",
-			"applyDirectivesToNode",
-			"ngTransclude",
-			"applyDirectivesToNode",
-			"ngTransclude",
-			"applyDirectivesToNode",
-			"ngTransclude",
-			"applyDirectivesToNode",
-			"ngTransclude",
-			"applyDirectivesToNode",
-			"transcludeFn",
-			"applyDirectivesToNode",
-			"hasTranscludeDirective",
-			"applyDirectivesToNode",
-			"nonTlbTranscludeDirective",
-			"nodeLinkFn",
-			"applyDirectivesToNode",
-			"newIsolateScopeDirective",
-			"mergeTemplateAttributes",
-			"replaceWith",
-			"applyDirectivesToNode",
-			"compileNode",
-			"applyDirectivesToNode",
-			"$element"
+			"createInjector"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -247,19 +247,19 @@
 			[
 				{
 					"buffer": 0,
-					"file": "angular.js",
-					"semi_transient": false,
+					"file": "/Users/zhangjiong/code/AngularLearn/js/angular.js",
+					"semi_transient": true,
 					"settings":
 					{
-						"buffer_size": 1214698,
+						"buffer_size": 1190118,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								597361,
-								597361
+								1923,
+								1930
 							]
 						],
 						"settings":
@@ -269,7 +269,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 340158.0,
+						"translation.y": 869.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -359,7 +359,7 @@
 	"show_open_files": false,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 308.0,
+	"side_bar_width": 402.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{

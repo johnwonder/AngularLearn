@@ -11506,6 +11506,8 @@ function $HttpProvider() {
 
       var requestInterceptors = [];
       var responseInterceptors = [];
+      
+      //最重要在这边
       var promise = $q.when(config);
 
       // apply interceptors
@@ -16404,7 +16406,7 @@ function qFactory(nextTick, exceptionHandler) {
     //Necessary to support unbound execution :/
     d.resolve = simpleBind(d, d.resolve);
     d.reject = simpleBind(d, d.reject);
-    d.notify = simpleBind(d, d.notify);
+    d.notify = simpleBind(d, d.notify);// 返回一个function 
     return d;
   };
 
@@ -16417,6 +16419,7 @@ function qFactory(nextTick, exceptionHandler) {
       if (isUndefined(onFulfilled) && isUndefined(onRejected) && isUndefined(progressBack)) {
         return this;
       }
+      //里面会初始化一个Promise
       var result = new Deferred();
 
       this.$$state.pending = this.$$state.pending || [];
@@ -16446,6 +16449,7 @@ function qFactory(nextTick, exceptionHandler) {
     };
   }
 
+  //这里处理队列
   function processQueue(state) {
     var fn, deferred, pending;
 
@@ -16482,7 +16486,7 @@ function qFactory(nextTick, exceptionHandler) {
 
   extend(Deferred.prototype, {
     resolve: function(val) {
-      if (this.promise.$$state.status) return;
+      if (this.promise.$$state.status) return;//一开始为0 当然不会返回
       if (val === this.promise) {
         this.$$reject($qMinErr(
           'qcycle',

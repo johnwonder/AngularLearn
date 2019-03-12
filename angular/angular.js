@@ -5015,6 +5015,7 @@ function createInjector(modulesToLoad, strictDi) {
   }
 }
 
+//相当于静态方法
 createInjector.$$annotate = annotate;
 
 /**
@@ -9104,7 +9105,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
     /**
      * Looks for directives on the given node and adds them to the directive collection which is
      * sorted.
-     *收集指令
+     *收集指令 加入collectDirectives 数组中
      * @param node Node to search.
      * @param directives An array to which the directives are added to. This array is sorted before
      *        the function returns.
@@ -9215,6 +9216,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
               node.parentNode.removeChild(node.nextSibling);
             }
           }
+          //加入文本插值指令
           addTextInterpolateDirective(directives, node.nodeValue);
           break;
         case NODE_TYPE_COMMENT: /* Comment */
@@ -12963,7 +12965,7 @@ function $InterpolateProvider() {
      *    </div>
      *  </file>
      * </example>
-     *
+     * 已知问题
      * @knownIssue
      * It is currently not possible for an interpolated expression to contain the interpolation end
      * symbol. For example, `{{ '}}' }}` will be incorrectly interpreted as `{{ ' }}` + `' }}`, i.e.
@@ -12980,7 +12982,7 @@ function $InterpolateProvider() {
      * ```
      * <div data-context='{"context":{"id":3,"type":"page"}}">
      * ```
-     *
+     * 用空格分开
      * The workaround is to ensure that such instances are separated by whitespace:
      * ```
      * <div data-context='{"context":{"id":3,"type":"page"} }">
@@ -13057,7 +13059,8 @@ function $InterpolateProvider() {
       // single expression be used for iframe[src], object[src], etc., we ensure that the value
       // that's used is assigned or constructed by some JS code somewhere that is more testable or
       // make it obvious that you bound the value to some user controlled value.  This helps reduce
-      // the load when auditing for XSS issues.
+      // the load when auditing for(审查) XSS issues.
+      //跨站脚本攻击
       if (trustedContext && concat.length > 1) {
           $interpolateMinErr.throwNoconcat(text);
       }
@@ -15083,7 +15086,7 @@ AST.prototype = {
     }
     return left;
   },
-
+  //关系运算符
   relational: function() {
     var left = this.additive();
     var token;
@@ -15093,6 +15096,7 @@ AST.prototype = {
     return left;
   },
 
+  //加减法
   additive: function() {
     var left = this.multiplicative();
     var token;
@@ -15102,6 +15106,7 @@ AST.prototype = {
     return left;
   },
 
+  //乘法
   multiplicative: function() {
     var left = this.unary();
     var token;
@@ -15110,7 +15115,7 @@ AST.prototype = {
     }
     return left;
   },
-
+  //一元运算符
   unary: function() {
     var token;
     if ((token = this.expect('+', '-', '!'))) {
@@ -16477,7 +16482,7 @@ function getValueOf(value) {
  *  service.
  */
 function $ParseProvider() {
-  var cacheDefault = createMap();
+  var cacheDefault = createMap();//创建一个空对象
   var cacheExpensive = createMap();
   var literals = {
     'true': true,
@@ -16576,8 +16581,9 @@ function $ParseProvider() {
           parsedExpression = cache[cacheKey];
 
           if (!parsedExpression) {
+            //::oneWayExpression
             if (exp.charAt(0) === ':' && exp.charAt(1) === ':') {
-              oneTime = true;
+              oneTime = true; //第一次 digest 后，One-time 表达式一旦稳定后就不会再更新
               exp = exp.substring(2);
             }
             var parseOptions = expensiveChecks ? $parseOptionsExpensive : $parseOptions;
@@ -16596,6 +16602,7 @@ function $ParseProvider() {
             if (expensiveChecks) {
               parsedExpression = expensiveChecksInterceptor(parsedExpression);
             }
+            //存入缓存
             cache[cacheKey] = parsedExpression;
           }
           return addInterceptor(parsedExpression, interceptorFn);
