@@ -18222,7 +18222,7 @@ function $RootScopeProvider() {
             watchers,
             length,
             dirty, ttl = TTL,
-            next, current, target = this,
+            next, current, target = this, //很重要 this代表scope
             watchLog = [],
             logIdx, asyncTask;
 
@@ -18436,6 +18436,7 @@ function $RootScopeProvider() {
        * @returns {*} The result of evaluating the expression.
        */
       $eval: function(expr, locals) {
+        //this就是scope
         return $parse(expr)(this, locals);
       },
 

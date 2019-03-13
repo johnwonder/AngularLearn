@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en" ng-app="myapp">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Document</title>
+  <script src="angular/angular.js"></script>
+	 <script type="text/javascript">
+    
+// angular从 ensure(window, 'angular', Object);获得
+var app=angular.module('myapp',[]);
+
+app.service('myService', function() {
+      this.my = 0;
+});
+var injector = angular.injector(["myapp"]);
+
+
+function explicit(serviceA) {alert(serviceA.my);};
+explicit.$inject = ['myService'];
+injector.invoke(explicit);
+
+   </script>
+ </head>
+ <body>
+  <div>
+  </div>
+ </body>
+</html>

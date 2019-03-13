@@ -2529,7 +2529,8 @@ var version = {
   codeName: 'arbitrary-fallbacks'
 };
 
-
+//比如angular.injector 函数 暴露
+//实际调用的是createInjector函数
 function publishExternalAPI(angular) {
   extend(angular, {
     'bootstrap': bootstrap,
@@ -4505,7 +4506,7 @@ function annotate(fn, strictDi, name) {
 function createInjector(modulesToLoad, strictDi) {
   strictDi = (strictDi === true);
   var INSTANTIATING = {},
-      providerSuffix = 'Provider',
+      providerSuffix = 'Provider', //provider后缀
       path = [],
       loadedModules = new HashMap([], true),
       providerCache = {
@@ -16134,7 +16135,7 @@ function $ParseProvider() {
         fn.$$watchDelegate = parsedExpression.$$watchDelegate;
       } else if (!interceptorFn.$stateful) {
         // If there is an interceptor, but no watchDelegate then treat(对待) the interceptor like
-        // we treat filters - it is assumed to be a pure function unless flagged with $stateful
+        // we treat filters - it is assumed to be a pure function(纯函数) unless flagged with $stateful
         fn.$$watchDelegate = inputsWatchDelegate;
         //解析过的表达式如果没有输入那么就用useInputs
         useInputs = !parsedExpression.inputs;
