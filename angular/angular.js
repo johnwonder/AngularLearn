@@ -70,7 +70,7 @@ function minErr(module, ErrorConstructor) {
   };
 }
 
-/* We need to tell jshint what variables are being exported */
+/* We need to tell jshint(代码检测工具) what variables are being exported */
 /* global angular: true,
   msie: true,
   jqLite: true,
@@ -4717,6 +4717,7 @@ function createInjector(modulesToLoad, strictDi) {
           createInternalInjector(instanceCache, function(serviceName, caller) {
 
             //去providerCache里去找
+            //get方法就是getService方法
             var provider = providerInjector.get(serviceName + providerSuffix, caller);
             return instanceInjector.invoke(
                 provider.$get, provider, undefined, serviceName);
@@ -6413,6 +6414,9 @@ function Browser(window, document, $log, $sniffer) {
     lastCachedState = cachedState;
   }
 
+  //如果URL没有发生变化那么立即返回。
+   //反之则会保存当前的URL和相关历史状态，同时调用当URL发生变化时注册过的监听器。
+   //https://blog.csdn.net/dm_vincent/article/details/51607018
   function fireUrlChange() {
     if (lastBrowserUrl === self.url() && lastHistoryState === cachedState) {
       return;
@@ -6444,7 +6448,7 @@ function Browser(window, document, $log, $sniffer) {
    * {@link ng.$location $location service} to monitor url changes in angular apps.
    *
    * @param {function(string)} listener Listener function to be called when url changes.
-   * @return {function(string)} Returns the registered listener fn - handy if the fn is anonymous.
+   * @return {function(string)} Returns the registered listener fn - handy(方便) if the fn is anonymous.
    */
   self.onUrlChange = function(callback) {
     // TODO(vojta): refactor to use node's syntax for events
@@ -6461,6 +6465,8 @@ function Browser(window, document, $log, $sniffer) {
       urlChangeInit = true;
     }
 
+    //把callback放入urlChangeListeners中
+    //并返回callback
     urlChangeListeners.push(callback);
     return callback;
   };
@@ -6480,6 +6486,8 @@ function Browser(window, document, $log, $sniffer) {
    * Needs to be exported to be able to check for changes that have been done in sync,
    * as hashchange/popstate events fire in async.
    */
+   //https://blog.csdn.net/ebay/article/details/50349688
+   //angular渲染性能分析
   self.$$checkUrlChange = fireUrlChange;
 
   //////////////////////////////////////////////////////////////
@@ -18226,15 +18234,19 @@ function $RootScopeProvider() {
             watchLog = [],
             logIdx, asyncTask;
 
+        //开始消化阶段
+        //把scope的 $$phase变量置为$digest
         beginPhase('$digest');
         // Check for changes to browser url that happened in sync before the call to $digest
         $browser.$$checkUrlChange();
 
+        //配置$http服务使用$rootScope.$applyAsync来合并处理几乎在相同时间得到的http响应。对于同时发起很多HTTP请求(一般在应用启动阶段)的大型应用，能够大幅提高性能
         if (this === $rootScope && applyAsyncId !== null) {
           // If this is the root scope, and $applyAsync has scheduled a deferred $apply(), then
           // cancel the scheduled $apply and flush the queue of expressions to be evaluated.
           $browser.defer.cancel(applyAsyncId);
           flushApplyAsync();
+          //applyAsyncQueue
         }
 
         lastDirtyWatch = null;
@@ -18246,6 +18258,7 @@ function $RootScopeProvider() {
           // It's safe for asyncQueuePosition to be a local variable here because this loop can't
           // be reentered recursively. Calling $digest from a function passed to $applyAsync would
           // lead to a '$digest already in progress' error.
+          //$evalAsync的时候填充asyncQueue
           for (var asyncQueuePosition = 0; asyncQueuePosition < asyncQueue.length; asyncQueuePosition++) {
             try {
               asyncTask = asyncQueue[asyncQueuePosition];
@@ -18470,9 +18483,12 @@ function $RootScopeProvider() {
        *
        * @param {(object)=} locals Local variables object, useful for overriding values in scope.
        */
+       //https://blog.csdn.net/dm_vincent/article/details/51607018
       $evalAsync: function(expr, locals) {
         // if we are outside of an $digest loop and this is the first time we are scheduling async
         // task also schedule async auto-flush
+        //如果当前不处于$digest或者$apply的过程中(只有在$apply和$digest方法中才会设置$$phase这个字段)，并且asyncQueue数组中还不存在任务时，
+        //就会异步调度一轮digest循环来确保asyncQueue数组中的表达式会被执行
         if (!$rootScope.$$phase && !asyncQueue.length) {
           $browser.defer(function() {
             if (asyncQueue.length) {
@@ -18787,6 +18803,7 @@ function $RootScopeProvider() {
     var $rootScope = new Scope();
 
     //The internal queues. Expose them on the $rootScope for debugging/testing purposes.
+    //内部队列
     var asyncQueue = $rootScope.$$asyncQueue = [];
     var postDigestQueue = $rootScope.$$postDigestQueue = [];
     var applyAsyncQueue = $rootScope.$$applyAsyncQueue = [];
@@ -18795,7 +18812,7 @@ function $RootScopeProvider() {
 
     return $rootScope;
 
-
+    //置个状态
     function beginPhase(phase) {
       if ($rootScope.$$phase) {
         throw $rootScopeMinErr('inprog', '{0} already in progress', $rootScope.$$phase);
@@ -18804,6 +18821,7 @@ function $RootScopeProvider() {
       $rootScope.$$phase = phase;
     }
 
+     //清除状态
     function clearPhase() {
       $rootScope.$$phase = null;
     }
