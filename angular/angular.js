@@ -17887,9 +17887,11 @@ function $RootScopeProvider() {
         }
         // we use unshift since we use a while loop in $digest for speed.
         // the while loop reads in reverse order.
+        //unshift() 方法可向数组的开头添加一个或更多元素，并返回新的长度
         array.unshift(watcher);
 
         //添加watcherCount
+        //parent rootScope 也就加一
         incrementWatchersCount(this, 1);
 
         //注销
@@ -18290,7 +18292,7 @@ function $RootScopeProvider() {
                       dirty = true;
                       lastDirtyWatch = watch;
                       watch.last = watch.eq ? copy(value, null) : value;
-                      fn = watch.fn;
+                      fn = watch.fn; //此处是Listener
                       fn(value, ((last === initWatchVal) ? value : last), current);
                       if (ttl < 5) {
                         logIdx = 4 - ttl;
