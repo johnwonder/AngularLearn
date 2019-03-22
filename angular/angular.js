@@ -17858,6 +17858,7 @@ function $RootScopeProvider() {
        *    - `scope` refers to the current scope
        * @param {boolean=} [objectEquality=false] Compare for object equality using {@link angular.equals} instead of
        *     comparing for reference equality.
+       //返回一个注销函数
        * @returns {function()} Returns a deregistration function for this listener.
        */
       $watch: function(watchExp, listener, objectEquality, prettyPrintExpression) {
@@ -17894,7 +17895,7 @@ function $RootScopeProvider() {
         //parent rootScope 也就加一
         incrementWatchersCount(this, 1);
 
-        //注销
+        //返回注销方法
         return function deregisterWatch() {
           if (arrayRemove(array, watcher) >= 0) {
             incrementWatchersCount(scope, -1);
@@ -18057,6 +18058,7 @@ function $RootScopeProvider() {
         // only track veryOldValue if the listener is asking for it
         var trackVeryOldValue = (listener.length > 1);
         var changeDetected = 0;
+        //实际返回watch函数
         var changeDetector = $parse(obj, $watchCollectionInterceptor);
         var internalArray = [];
         var internalObject = {};
@@ -18284,6 +18286,7 @@ function $RootScopeProvider() {
                   // circuit it with === operator, only when === fails do we use .equals
                   if (watch) {
                     get = watch.get;
+                    //执行expression后 当前值和最后的指 不相等 那么触发listener
                     if ((value = get(current)) !== (last = watch.last) &&
                         !(watch.eq
                             ? equals(value, last)
@@ -18291,6 +18294,7 @@ function $RootScopeProvider() {
                                && isNaN(value) && isNaN(last)))) {
                       dirty = true;
                       lastDirtyWatch = watch;
+                      //把最新值赋给watch.last
                       watch.last = watch.eq ? copy(value, null) : value;
                       fn = watch.fn; //此处是Listener
                       fn(value, ((last === initWatchVal) ? value : last), current);
