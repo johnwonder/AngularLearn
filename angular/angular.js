@@ -16768,6 +16768,7 @@ function $ParseProvider() {
     }
 
     //添加拦截器
+    //有interceptorFn 那么就返回regular 和onetime 两种
     function addInterceptor(parsedExpression, interceptorFn) {
       
       //如果没有interceptorFn 那就直接返回parsedExpression
@@ -16776,6 +16777,7 @@ function $ParseProvider() {
       var watchDelegate = parsedExpression.$$watchDelegate;
       var useInputs = false;
 
+      //只要不是watchDelegate不是oneTime 的Delegate 那么就是regularWatch
       var regularWatch =
           watchDelegate !== oneTimeLiteralWatchDelegate &&
           watchDelegate !== oneTimeWatchDelegate;
