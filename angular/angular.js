@@ -16819,20 +16819,20 @@ function $ParseProvider() {
  * A service that helps you run functions asynchronously, and use their return values (or exceptions)
  * when they are done processing.
  *
- * This is an implementation of promises/deferred objects inspired by
+ * This is an implementation of promises/deferred objects inspired(借助于灵感) by
  * [Kris Kowal's Q](https://github.com/kriskowal/q).
  *
  * $q can be used in two fashions --- one which is more similar to Kris Kowal's Q or jQuery's Deferred
- * implementations, and the other which resembles ES6 (ES2015) promises to some degree.
- *
+ * implementations, and the other which resembles(相似) ES6 (ES2015) promises to some degree(某种程度).
+ * $q 可以应用在两种形式 一个跟 kris kowal's Q 或者jQuery的实现比较像，一个某种程度上 跟 ES6的promise相似
  * # $q constructor
  *
- * The streamlined ES6 style promise is essentially just using $q as a constructor which takes a `resolver`
+ * The streamlined(流线型的) ES6 style promise is essentially just using $q as a constructor which takes a `resolver`
  * function as the first argument. This is similar to the native Promise implementation from ES6,
  * see [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).
  *
  * While the constructor-style use is supported, not all of the supporting methods from ES6 promises are
- * available yet.
+ * available yet. 不是所有ES6 promise支持的方法都有效
  *
  * It can be used like so:
  *
@@ -16841,7 +16841,8 @@ function $ParseProvider() {
  *   // are available in the current lexical scope (they could have been injected or passed in).
  *
  *   function asyncGreet(name) {
- *     // perform some asynchronous operation, resolve or reject the promise when appropriate.
+ *     // perform(执行) some asynchronous operation, resolve or reject the promise when appropriate.
+       // 适当的时候调用resolve 和reject
  *     return $q(function(resolve, reject) {
  *       setTimeout(function() {
  *         if (okToGreet(name)) {
@@ -16868,10 +16869,11 @@ function $ParseProvider() {
  * However, the more traditional CommonJS-style usage is still available, and documented below.
  *
  * [The CommonJS Promise proposal](http://wiki.commonjs.org/wiki/Promises) describes a promise as an
- * interface for interacting with an object that represents the result of an action that is
+ * interface for interacting(相互作用) with an object that represents the result of an action that is
  * performed asynchronously, and may or may not be finished at any given point in time.
  *
- * From the perspective of dealing with error handling, deferred and promise APIs are to
+ *延迟和承诺API用于异步编程，而“try”、“catch”和“throw”关键字用于同步编程
+ * From the perspective(观点) of dealing with error handling, deferred and promise APIs are to
  * asynchronous programming what `try`, `catch` and `throw` keywords are to synchronous programming.
  *
  * ```js
@@ -16904,20 +16906,20 @@ function $ParseProvider() {
  *   });
  * ```
  *
- * At first it might not be obvious why this extra complexity is worth the trouble. The payoff
+ * At first it might not be obvious(明显) why this extra complexity(额外的复杂性) is worth the trouble(值得麻烦). The payoff(回报)
  * comes in the way of guarantees that promise and deferred APIs make, see
  * https://github.com/kriskowal/uncommonjs/blob/master/promises/specification.md.
  *
- * Additionally the promise api allows for composition that is very hard to do with the
- * traditional callback ([CPS](http://en.wikipedia.org/wiki/Continuation-passing_style)) approach.
+ * Additionally the promise api allows for composition(组成) that is very hard to do with the
+ * traditional(传统的) callback ([CPS](http://en.wikipedia.org/wiki/Continuation-passing_style)) approach.
  * For more on this please see the [Q documentation](https://github.com/kriskowal/q) especially the
- * section on serial or parallel joining of promises.
+ * section on serial or parallel joining of promises.(串行和并行)
  *
  * # The Deferred API
  *
  * A new instance of deferred is constructed by calling `$q.defer()`.
  *
- * The purpose of the deferred object is to expose the associated Promise instance as well as APIs
+ * The purpose of the deferred object is to expose(暴露) the associated Promise instance as well as APIs
  * that can be used for signaling the successful or unsuccessful completion, as well as the status
  * of the task.
  *
@@ -16929,6 +16931,7 @@ function $ParseProvider() {
  *   resolving it with a rejection constructed via `$q.reject`.
  * - `notify(value)` - provides updates on the status of the promise's execution. This may be called
  *   multiple times before the promise is either resolved or rejected.
+    //在resolved或者rejected前可能会多次调用
  *
  * **Properties**
  *
@@ -16938,14 +16941,14 @@ function $ParseProvider() {
  * # The Promise API
  *
  * A new promise instance is created when a deferred instance is created and can be retrieved by
- * calling `deferred.promise`.
+ * calling `deferred.promise`. //当deferred对象被创建了 那promise实例也创建了
  *
- * The purpose of the promise object is to allow for interested parties to get access to the result
- * of the deferred task when it completes.
+ * The purpose of the promise object is to allow for interested parties(利害关系方) to get access to the result
+ * of the deferred task when it completes. //利害关系方访问结果
  *
  * **Methods**
  *
- * - `then(successCallback, [errorCallback], [notifyCallback])` – regardless of when the promise was or
+ * - `then(successCallback, [errorCallback], [notifyCallback])` – regardless of(不顾) when the promise was or
  *   will be resolved or rejected, `then` calls one of the success or error callbacks asynchronously
  *   as soon as the result is available. The callbacks are called with a single argument: the result
  *   or rejection reason. Additionally, the notify callback may be called zero or more times to
@@ -16959,9 +16962,9 @@ function $ParseProvider() {
  *   resolved or rejected from the notifyCallback method. The errorCallback and notifyCallback
  *   arguments are optional.
  *
- * - `catch(errorCallback)` – shorthand for `promise.then(null, errorCallback)`
+ * - `catch(errorCallback)` – shorthand(简写) for `promise.then(null, errorCallback)`
  *
- * - `finally(callback, notifyCallback)` – allows you to observe either the fulfillment or rejection of a promise,
+ * - `finally(callback, notifyCallback)` – allows you to observe(观察) either the fulfillment(完成) or rejection of a promise,
  *   but to do so without modifying the final value. This is useful to release resources or do some
  *   clean-up that needs to be done whether the promise was rejected or resolved. See the [full
  *   specification](https://github.com/kriskowal/q/wiki/API-Reference#promisefinallycallback) for
@@ -16984,7 +16987,7 @@ function $ParseProvider() {
  * It is possible to create chains of any length and since a promise can be resolved with another
  * promise (which will defer its resolution further), it is possible to pause/defer resolution of
  * the promises at any point in the chain. This makes it possible to implement powerful APIs like
- * $http's response interceptors.
+ * $http's response interceptors.(实现 http 响应的拦截器)
  *
  *
  * # Differences between Kris Kowal's Q and $q
@@ -16993,7 +16996,7 @@ function $ParseProvider() {
  *
  * - $q is integrated with the {@link ng.$rootScope.Scope} Scope model observation
  *   mechanism in angular, which means faster propagation of resolution or rejection into your
- *   models and avoiding unnecessary browser repaints, which would result in flickering UI.
+ *   models and avoiding unnecessary browser repaints(重绘), which would result in flickering UI.
  * - Q has many more features than $q, but that comes at a cost of bytes. $q is tiny, but contains
  *   all the important functionality needed for common async tasks.
  *
@@ -17015,7 +17018,8 @@ function $ParseProvider() {
  *      // it got called synchronously or asynchronously.
  *      expect(resolvedValue).toBeUndefined();
  *
- *      // Propagate promise resolution to 'then' functions using $apply().
+        //$apply方法使得promise运行到then方法
+ *      // Propagate(传播) promise resolution to 'then' functions using $apply().
  *      $rootScope.$apply();
  *      expect(resolvedValue).toEqual(123);
  *    }));
@@ -17044,6 +17048,7 @@ function $$QProvider() {
   }];
 }
 
+//构造一个promise管理器
 /**
  * Constructs a promise manager.
  *
@@ -17065,9 +17070,12 @@ function qFactory(nextTick, exceptionHandler) {
    *
    * @returns {Deferred} Returns a new instance of deferred.
    */
+   //返回一个Deferred对象
   var defer = function() {
+    //Deferred 构造只是定义一个promise对象
     var d = new Deferred();
     //Necessary to support unbound execution :/
+    //返回一个函数 可以传参数调用d.resolve 
     d.resolve = simpleBind(d, d.resolve);
     d.reject = simpleBind(d, d.reject);
     d.notify = simpleBind(d, d.notify);
@@ -17088,10 +17096,12 @@ function qFactory(nextTick, exceptionHandler) {
 
 
       this.$$state.pending = this.$$state.pending || [];
+      //把Defer 对象push进pending数组
       this.$$state.pending.push([result, onFulfilled, onRejected, progressBack]);
       
       if (this.$$state.status > 0) scheduleProcessQueue(this.$$state);
 
+      //返回新建Defer对象的promise
       return result.promise;
     },
 
