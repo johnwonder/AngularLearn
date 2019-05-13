@@ -8832,6 +8832,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       //compileNodes里 会判断nodeLinkFn是不是 有scope属性
       compile.$$addScopeClass($compileNodes);
       var namespace = null;
+      
       //publicLinkFn(scope)：传入$rootScope，执行publicLinkFn，完成整个页面的链接工作
       return function publicLinkFn(scope, cloneConnectFn, options) {
         assertArg(scope, 'scope');
@@ -8903,6 +8904,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         if (compositeLinkFn) compositeLinkFn(scope, $linkNode, $linkNode, parentBoundTranscludeFn);
         return $linkNode;
       };
+    
+
     }
 
     function detectNamespaceForChildElements(parentElement) {
@@ -17096,12 +17099,13 @@ function qFactory(nextTick, exceptionHandler) {
 
 
       this.$$state.pending = this.$$state.pending || [];
-      //把Defer 对象push进pending数组
+      //把一个新的 Defer 对象push进pending数组
       this.$$state.pending.push([result, onFulfilled, onRejected, progressBack]);
       
       if (this.$$state.status > 0) scheduleProcessQueue(this.$$state);
 
-      //返回新建Defer对象的promise
+      //返回这个新建Defer对象的promise
+      //可以形成promise chain
       return result.promise;
     },
 
@@ -17133,6 +17137,8 @@ function qFactory(nextTick, exceptionHandler) {
     state.processScheduled = false;
     state.pending = undefined;
     for (var i = 0, ii = pending.length; i < ii; ++i) {
+      
+      //获取pending数组的元素 元素本身也是数组
       deferred = pending[i][0];
       fn = pending[i][state.status];
       try {
@@ -17163,6 +17169,7 @@ function qFactory(nextTick, exceptionHandler) {
 
   extend(Deferred.prototype, {
     resolve: function(val) {
+      //第一次resolve的时候为0 所以会往下走
       if (this.promise.$$state.status) return;
       if (val === this.promise) {
         this.$$reject($qMinErr(
