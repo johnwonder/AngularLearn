@@ -12132,16 +12132,24 @@ function $HttpProvider() {
       config.paramSerializer = isString(config.paramSerializer) ?
           $injector.get(config.paramSerializer) : config.paramSerializer;
 
+      //请求拦截器
       var requestInterceptors = [];
+      //响应拦截器
       var responseInterceptors = [];
+      //调用$q的静态方法when
       var promise = $q.when(config);
 
       // apply interceptors
       forEach(reversedInterceptors, function(interceptor) {
         if (interceptor.request || interceptor.requestError) {
+          //unshift在顶部插入
+          //unshift() 方法可向数组的开头添加一个或更多元素，并返回新的长度。
+          //随后在chain的时候一次取出两个元素
           requestInterceptors.unshift(interceptor.request, interceptor.requestError);
         }
         if (interceptor.response || interceptor.responseError) {
+          //push在尾部插入
+          //push() 方法可向数组的末尾添加一个或多个元素，并返回新的长度。
           responseInterceptors.push(interceptor.response, interceptor.responseError);
         }
       });
@@ -12176,6 +12184,7 @@ function $HttpProvider() {
       return promise;
 
 
+      //加入promise链
       function chainInterceptors(promise, interceptors) {
         for (var i = 0, ii = interceptors.length; i < ii;) {
           var thenFn = interceptors[i++];
@@ -12415,10 +12424,12 @@ function $HttpProvider() {
           reqHeaders = config.headers,
           url = buildUrl(config.url, config.paramSerializer(config.params));
 
+      //
       $http.pendingRequests.push(config);
       promise.then(removePendingReq, removePendingReq);
 
 
+      //配置了cache属性且是get 方法时
       if ((config.cache || defaults.cache) && config.cache !== false &&
           (config.method === 'GET' || config.method === 'JSONP')) {
         cache = isObject(config.cache) ? config.cache
@@ -12427,6 +12438,7 @@ function $HttpProvider() {
       }
 
       if (cache) {
+        //cachedResp是个promise对象
         cachedResp = cache.get(url);
         if (isDefined(cachedResp)) {
           if (isPromiseLike(cachedResp)) {
@@ -12488,6 +12500,11 @@ function $HttpProvider() {
       }
 
 
+      //重要的一步
+      //注册到$httpBackend()方法
+      //缓存响应
+      //处理原始$http promise
+      //调用$apply
       /**
        * Callback registered to $httpBackend():
        *  - caches the response if desired
@@ -12495,6 +12512,7 @@ function $HttpProvider() {
        *  - calls $apply
        */
       function done(status, response, headersString, statusText) {
+        //是否缓存
         if (cache) {
           if (isSuccess(status)) {
             cache.put(url, [status, response, parseHeaders(headersString), statusText]);
@@ -12621,9 +12639,11 @@ function createHttpBackend($browser, createXhr, $browserDefer, callbacks, rawDoc
       });
     } else {
 
+      //貌似这边的method url没用啊
       var xhr = createXhr(method, url);
 
       xhr.open(method, url, true);
+      //设置httpHeaders
       forEach(headers, function(value, key) {
         if (isDefined(value)) {
             xhr.setRequestHeader(key, value);
@@ -12633,7 +12653,7 @@ function createHttpBackend($browser, createXhr, $browserDefer, callbacks, rawDoc
       xhr.onload = function requestLoaded() {
         var statusText = xhr.statusText || '';
 
-        // responseText is the old-school way of retrieving response (supported by IE9)
+        // responseText is the old-school(老派的) way of retrieving response (supported by IE9)
         // response/responseType properties were introduced in XHR Level2 spec (supported by IE10)
         var response = ('response' in xhr) ? xhr.response : xhr.responseText;
 
@@ -12647,6 +12667,7 @@ function createHttpBackend($browser, createXhr, $browserDefer, callbacks, rawDoc
           status = response ? 200 : urlResolve(url).protocol == 'file' ? 404 : 0;
         }
 
+        //callback中去处理promise
         completeRequest(callback,
             status,
             response,
@@ -12692,9 +12713,11 @@ function createHttpBackend($browser, createXhr, $browserDefer, callbacks, rawDoc
         }
       }
 
+      //onLoad 里 去调用send方法
       xhr.send(isUndefined(post) ? null : post);
     }
 
+    //如果设置了超时参数那么 超时后就调用timeoutRequest
     if (timeout > 0) {
       var timeoutId = $browserDefer(timeoutRequest, timeout);
     } else if (isPromiseLike(timeout)) {

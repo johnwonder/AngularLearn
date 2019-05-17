@@ -15,7 +15,7 @@
 			"file": "/Users/zhangjiong/code/AngularLearn/js/angular.js",
 			"settings":
 			{
-				"buffer_size": 1190118,
+				"buffer_size": 1190550,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -53,8 +53,6 @@
 	},
 	"expanded_folders":
 	[
-		"/Users/zhangjiong/code/AngularLearn",
-		"/Users/zhangjiong/code/AngularLearn/js"
 	],
 	"file_history":
 	[
@@ -251,15 +249,15 @@
 					"semi_transient": true,
 					"settings":
 					{
-						"buffer_size": 1190118,
+						"buffer_size": 1190550,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1923,
-								1930
+								2028,
+								2040
 							]
 						],
 						"settings":
@@ -337,7 +335,7 @@
 		[
 			[
 				"",
-				"~/code/angular.sublime-project"
+				"~/code/VueJsLearn/start-1.sublime-workspace"
 			]
 		],
 		"width": 380.0
