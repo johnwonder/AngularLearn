@@ -34,7 +34,7 @@
  *   error from returned function, for cases when a particular type of error is useful.
  * @returns {function(code:string, template:string, ...templateArgs): Error} minErr instance
  */
-
+//angular 内部很多这种函数 内部返回函数
 function minErr(module, ErrorConstructor) {
   ErrorConstructor = ErrorConstructor || Error;
   return function() {
@@ -6559,6 +6559,7 @@ function Browser(window, document, $log, $sniffer) {
 function $BrowserProvider() {
   this.$get = ['$window', '$log', '$sniffer', '$document',
       function($window, $log, $sniffer, $document) {
+        //返回一个新的Browser对象
         return new Browser($window, $document, $log, $sniffer);
       }];
 }
@@ -9168,7 +9169,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
             //这是指定指令作用区间的功能，最常用的就是ng-repeat-start和ng-repeat-end了。
             //http://www.cnblogs.com/HeJason/p/5514690.html
             var multiElementMatch = ngAttrName.match(MULTI_ELEMENT_DIR_RE);
-            //判断是否支持multiElement
+            //判断指令是否支持multiElement
+            //https://www.cnblogs.com/sagacite/p/4622008.html
             if (multiElementMatch && directiveIsMultiElement(multiElementMatch[1])) {
               attrStartName = name;
               attrEndName = name.substr(0, name.length - 5) + 'end';
@@ -17097,7 +17099,7 @@ function qFactory(nextTick, exceptionHandler) {
       }
       var result = new Deferred();
 
-
+      //promise的 $$state属性
       this.$$state.pending = this.$$state.pending || [];
       //把一个新的 Defer 对象push进pending数组
       this.$$state.pending.push([result, onFulfilled, onRejected, progressBack]);
@@ -17188,12 +17190,17 @@ function qFactory(nextTick, exceptionHandler) {
       var done = false;
       try {
         if ((isObject(val) || isFunction(val))) then = val && val.then;
+        //val.then方法 val是promise的时候
         if (isFunction(then)) {
+          //当val传入的是promise的时候
           this.promise.$$state.status = -1;
+          //调用then函数 放入队列
+          //when函数传入promise对象 的时候会调用
           then.call(val, resolvePromise, rejectPromise, simpleBind(this, this.notify));
         } else {
 
           //更新promise的状态对象
+          //status置为1
           this.promise.$$state.value = val;
           this.promise.$$state.status = 1;
           //调度的时候pending为空就返回了
@@ -17204,6 +17211,7 @@ function qFactory(nextTick, exceptionHandler) {
         exceptionHandler(e);
       }
 
+      //会把其他promise的返回值传入
       function resolvePromise(val) {
         if (done) return;
         done = true;
@@ -17217,6 +17225,7 @@ function qFactory(nextTick, exceptionHandler) {
     },
 
     reject: function(reason) {
+      //status > 0就 return
       if (this.promise.$$state.status) return;
       this.$$reject(reason);
     },
@@ -17235,7 +17244,7 @@ function qFactory(nextTick, exceptionHandler) {
           var callback, result;
           for (var i = 0, ii = callbacks.length; i < ii; i++) {
             result = callbacks[i][0];
-            callback = callbacks[i][3];
+            callback = callbacks[i][3]; //固定调用第四个方法
             try {
               result.notify(isFunction(callback) ? callback(progress) : progress);
             } catch (e) {
@@ -17337,11 +17346,22 @@ function qFactory(nextTick, exceptionHandler) {
    //https://blog.csdn.net/ft6302244/article/details/45023531
    //https://teropa.info/build-your-own-angular/
   var when = function(value, callback, errback, progressBack) {
+    
     var result = new Deferred();
-    result.resolve(value); //内部调用$$resolve方法
+    result.resolve(value); 
+
+    //如果value是promise 那么会调用promise的then方法 
+    //如果promise state status =0   那么就放入pending队列
+    //等待这个promise的 defer 调用resolve方法
+
+    //内部调用$$resolve方法
+    //会改变result.promise的status 并且放入调度
 
     //then 方法会把callback放进一个pending数组
     //then中如果 status >0 那么也会放入queue
+
+    //result.promise.$$state.value = value
+    //then方法最终返回内部defer的promise
     return result.promise.then(callback, errback, progressBack);
   };
 
@@ -17376,14 +17396,20 @@ function qFactory(nextTick, exceptionHandler) {
    *   If any of the promises is resolved with a rejection, this resulting promise will be rejected
    *   with the same rejection value.
    */
-
+   //https://blog.csdn.net/shidaping/article/details/52398925
   function all(promises) {
     var deferred = new Deferred(),
         counter = 0,
+
         results = isArray(promises) ? [] : {};
 
     forEach(promises, function(promise, key) {
       counter++;
+
+      //when调用过程：
+      // 调用promise.then的时候 会把 resolvePromise放入
+      // when中的defer对象通过 that 闭包 放入resolvePromise函数
+
       when(promise).then(function(value) {
         if (results.hasOwnProperty(key)) return;
         results[key] = value;
@@ -17394,6 +17420,7 @@ function qFactory(nextTick, exceptionHandler) {
       });
     });
 
+    //先进入这边 导致counter 大于0
     if (counter === 0) {
       deferred.resolve(results);
     }
@@ -17419,17 +17446,25 @@ function qFactory(nextTick, exceptionHandler) {
     var deferred = defer();
 
     forEach(promises, function(promise) {
+
       when(promise).then(deferred.resolve, deferred.reject);
     });
 
     return deferred.promise;
   }
 
+  //通过$q注入时返回Q函数
+  //随后Q函数 传入resolver参数调用
+  //调用resolver函数时传入包装deferred对象的resolve和 reject函数
+
+  //随后返回promise对象
+  //promise对象调用then函数时放入pending队列
   var $Q = function Q(resolver) {
     if (!isFunction(resolver)) {
       throw $qMinErr('norslvr', "Expected resolverFn, got '{0}'", resolver);
     }
 
+    //构造一个Deferred对象
     var deferred = new Deferred();
 
     function resolveFn(value) {
@@ -17440,13 +17475,17 @@ function qFactory(nextTick, exceptionHandler) {
       deferred.reject(reason);
     }
 
+    //调用resolver参数函数
     resolver(resolveFn, rejectFn);
 
+    //返回一个promise对象
+    //供调用then函数
     return deferred.promise;
   };
 
   // Let's make the instanceof operator work for promises, so that
   // `new $q(fn) instanceof $q` would evaluate to true.
+  //使得new $q(fn) 也可以调用promise的方法
   $Q.prototype = Promise.prototype;
 
   $Q.defer = defer;
@@ -18521,7 +18560,7 @@ function $RootScopeProvider() {
             }
           });
         }
-
+        //放入asyncQueue数组
         asyncQueue.push({scope: this, expression: $parse(expr), locals: locals});
       },
 
@@ -26680,6 +26719,8 @@ var forceAsyncEvents = {
   'blur': true,
   'focus': true
 };
+
+//ng-click 指令收集
 forEach(
   'click dblclick mousedown mouseup mouseover mouseout mousemove mouseenter mouseleave keydown keyup keypress submit focus blur copy cut paste'.split(' '),
   function(eventName) {
