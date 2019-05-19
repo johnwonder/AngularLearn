@@ -12,12 +12,21 @@
 	"buffers":
 	[
 		{
-			"file": "/Users/zhangjiong/code/AngularLearn/js/angular.js",
+			"file": "angular.js",
 			"settings":
 			{
-				"buffer_size": 1190550,
+				"buffer_size": 1219883,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/zhangjiong/code/AngularLearn/part5.html",
+			"settings":
+			{
+				"buffer_size": 385,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
 			}
 		}
 	],
@@ -53,9 +62,13 @@
 	},
 	"expanded_folders":
 	[
+		"/Users/zhangjiong/code/AngularLearn",
+		"/Users/zhangjiong/code/AngularLearn/angular"
 	],
 	"file_history":
 	[
+		"/Users/zhangjiong/HexoSource/node_modules/hexo/node_modules/yargs/index.js",
+		"/Users/zhangjiong/HexoSource/node_modules/hexo/node_modules/bluebird/js/browser/bluebird.core.js",
 		"/Users/zhangjiong/code/AngularLearn/js/angular.js",
 		"/Users/zhangjiong/HexoSource/node_modules/asynckit/lib/state.js",
 		"/Users/zhangjiong/HexoSource/node_modules/hexo-renderer-marked/node_modules/bluebird/js/browser/bluebird.core.js",
@@ -83,6 +96,37 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"xhrFactory",
+			"createXhr",
+			"timeout",
+			"completeRequest",
+			"$httpBackend",
+			"timeout",
+			"post",
+			"completeRequest",
+			"deferred",
+			"resolvePromise",
+			"$httpBackend",
+			"defaults",
+			"defaultCache",
+			"defaults",
+			"cache",
+			"resolvePromise",
+			"$httpBackend",
+			"sendReq",
+			"buildUrl",
+			"sendReq",
+			"$httpBackend",
+			"removePendingReq",
+			"sendReq",
+			"$httpProvider",
+			"Deferred",
+			"$Provider",
+			"$qProvider",
+			"$httpProvider",
+			"$qProvider",
+			"$Provider",
+			"$httpProvider",
 			"TestabilityProvider",
 			"testability",
 			"notifyWhenNoOutstandingRequests",
@@ -179,38 +223,7 @@
 			"applyDirectivesToNode",
 			"addDirective",
 			"collectDirectives",
-			"ngTransclude",
-			"applyDirectivesToNode",
-			"hasDirectives",
-			"applyDirectivesToNode",
-			"ngTransclude",
-			"slots",
-			"compileNodes",
-			"applyDirectivesToNode",
-			"ngTransclude",
-			"applyDirectivesToNode",
-			"ngTransclude",
-			"applyDirectivesToNode",
-			"collectDirectives",
-			"ngTransclude",
-			"addDirective",
-			"collectDirectives",
-			"applyDirectivesToNode",
-			"hasDirectives",
-			"ngTranscludeDirective",
-			"transcludeControllers",
-			"ngTransclude",
-			"transcludeControllers",
-			"transcludeFn",
-			"pre:",
-			"pre",
-			"transcludeFn",
-			"setupControllers",
-			"preLink",
-			"addLinkFns",
-			"preLinkFns",
-			"setupControllers",
-			"createInjector"
+			"ngTransclude"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -245,19 +258,19 @@
 			[
 				{
 					"buffer": 0,
-					"file": "/Users/zhangjiong/code/AngularLearn/js/angular.js",
-					"semi_transient": true,
+					"file": "angular.js",
+					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1190550,
+						"buffer_size": 1219883,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2028,
-								2040
+								470235,
+								470235
 							]
 						],
 						"settings":
@@ -267,10 +280,38 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 869.0,
+						"translation.y": 264591.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "/Users/zhangjiong/code/AngularLearn/part5.html",
+					"semi_transient": true,
+					"settings":
+					{
+						"buffer_size": 385,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
 					"type": "text"
 				}
 			]

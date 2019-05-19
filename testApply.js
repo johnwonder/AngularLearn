@@ -11,8 +11,19 @@ function applyFunction1(key,value){
 	console.log("key:"+key);
 	console.log("value:"+value);
 
-
 }
+
+function applyFactory(){
+	args.push("33");
+}
+
+var cache = { "apply" : applyFactory };
+
+cache.apply();
+
+cache.apply();
+
+console.log(args);
 
 applyFunction.apply(null,args);
 

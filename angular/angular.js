@@ -324,6 +324,7 @@ function forEach(obj, iterator, context) {
       //isArray 是调用的Array的isArray方法
       var isPrimitive = typeof obj !== 'object';
       for (key = 0, length = obj.length; key < length; key++) {
+        //是数组 或者类数组对象
         if (isPrimitive || key in obj) {
           iterator.call(context, obj[key], key, obj);
         }
@@ -1821,6 +1822,7 @@ function bootstrap(element, modules, config) {
       }]);
     }
 
+    //这里压入了 ng 模块下的所有provider才会注入
     modules.unshift('ng');
     //console.log("bootstrap");
     ////通过createInjector方法会调用注入时提供的ng模块中的configFn
@@ -4682,6 +4684,7 @@ function createInjector(modulesToLoad, strictDi) {
       //定义了$provide缓存 在 调用ng模块的configFn时用到了。
       //line 2711
       providerCache = {
+        //supportObject 都返回一个新函数
         $provide: {
             provider: supportObject(provider),
             factory: supportObject(factory),
@@ -4719,6 +4722,9 @@ function createInjector(modulesToLoad, strictDi) {
             //去providerCache里去找
             //get方法就是getService方法
             var provider = providerInjector.get(serviceName + providerSuffix, caller);
+            
+            //invoke函数 fn,self,locals,serviceName
+            //调用provider的$get函数放入instanceCache中。
             return instanceInjector.invoke(
                 provider.$get, provider, undefined, serviceName);
             //$get 就返回下面的valueFn
@@ -4752,6 +4758,7 @@ function createInjector(modulesToLoad, strictDi) {
   instanceInjector.strictDi = strictDi;
   //if(fn) 因为有的方法invoke没有返回值
   //invoke的时候 通过injectionArgs方法把参数对象注入
+  //runBlocks是数组
   forEach(runBlocks, function(fn) { if (fn) instanceInjector.invoke(fn); });
 
   return instanceInjector;
@@ -4762,7 +4769,13 @@ function createInjector(modulesToLoad, strictDi) {
   //支持对象调用
   function supportObject(delegate) {
     return function(key, value) {
+      
+      //当key是 对象的时候 就把delegate函数放入闭包里
       if (isObject(key)) {
+        //function reverseParams(iteratorFn) {
+            //return function(value, key) {iteratorFn(key, value);};
+        //}
+        //reverseParams 为了适应foreach里调用函数的参数顺序
         forEach(key, reverseParams(delegate));// function(value, key) {iteratorFn(key, value);};
       } else {
         return delegate(key, value);
@@ -4772,6 +4785,7 @@ function createInjector(modulesToLoad, strictDi) {
 
  //返回实例化的 provider 
  //比如在定义ng模块的时候函数内部用到的链式调用
+ //一开始providerCache里只有$provide,$injector ，这里提供把其他provider放入providerCache里的机会
   function provider(name, provider_) {
     assertNotHasOwnProperty(name, 'service');
     if (isFunction(provider_) || isArray(provider_)) {
@@ -4795,7 +4809,9 @@ function createInjector(modulesToLoad, strictDi) {
     };
   }
 
+  //放入providerCache中
   function factory(name, factoryFn, enforce) {
+    //调用provider方法时 直接放入providerCache里
     return provider(name, {
       $get: enforce !== false ? enforceReturnValue(name, factoryFn) : factoryFn
     });
@@ -4836,7 +4852,7 @@ function createInjector(modulesToLoad, strictDi) {
       if (loadedModules.get(module)) return;
       loadedModules.put(module, true);
 
-      //调用invokdeQueue
+      //调用invokeQueue
       function runInvokeQueue(queue) {
         var i, ii;
         for (i = 0, ii = queue.length; i < ii; i++) {
@@ -4901,8 +4917,10 @@ function createInjector(modulesToLoad, strictDi) {
   ////////////////////////////////////
   // internal Injector
   // 创建内部注入器
+  //
   ////////////////////////////////////
 
+  //getService 如果缓存里没有 那么就会调用factory方法
   function createInternalInjector(cache, factory) {
 
     //没有cache里的serviceName的时候 ，再调用factory方法。
@@ -4964,6 +4982,11 @@ function createInjector(modulesToLoad, strictDi) {
       }
       // Support: Edge 12-13 only
       // See: https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/6156135/
+      //(?:pattern) 非获取匹配，匹配pattern但不获取匹配结果，不进行存储供以后使用
+      //https://www.cnblogs.com/whaozl/p/5462865.html
+      //匹配一个单词的边界，也就是指单词和空格间的位置（即正则表达式的“匹配”有两种概念，
+      //一种是匹配字符，一种是匹配位置，这里的\b就是匹配位置的）。例如，“er\b”可以匹配“never”中的“er”，
+      //但不能匹配“verb”中的“er”；“\b1_”可以匹配“1_23”中的“1_”，但不能匹配“21_3”中的“1_”。
       return typeof func === 'function'
         && /^(?:class\b|constructor\()/.test(stringifyFn(func));
     }
