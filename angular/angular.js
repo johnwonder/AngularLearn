@@ -12492,6 +12492,7 @@ function $HttpProvider() {
           reqHeaders[(config.xsrfHeaderName || defaults.xsrfHeaderName)] = xsrfValue;
         }
 
+        //done函数里调用了promise
         $httpBackend(config.method, url, reqData, done, reqHeaders, config.timeout,
             config.withCredentials, config.responseType,
             createApplyHandlers(config.eventHandlers),
