@@ -647,12 +647,12 @@ angular.module('ngResource', ['ng']).
         }
       };
 
- //用法 $resource(url, [paramDefaults], [actions], options);
+      //用法 $resource(url, [paramDefaults], [actions], options);
       //$resource('/users/:userId/cards/:cardId',{userId: 123, cardId: '@id'}, {charge: {method: 'POST', params: {charge: true}}});
       function resourceFactory(url, paramDefaults, actions, options) {
         var route = new Route(url, options);
 
- //把default.actions 和actions合并起来 放到一个新的对象里
+        //把default.actions 和actions合并起来 放到一个新的对象里
         actions = extend({}, provider.defaults.actions, actions);
 
         function extractParams(data, actionParams) {
