@@ -34,6 +34,31 @@ var provider = {
 
 console.log(applyFunction1.apply(provider,args));
 
+var MEMBER_NAME_REGEX = /^(\.[a-zA-Z_$@][0-9a-zA-Z_$@]*)+$/;
+
+function isValidDottedPath(path) {
+  return (path != null && path !== '' && path !== 'hasOwnProperty' &&
+      MEMBER_NAME_REGEX.test('.' + path));
+}
+
+function lookupDottedPath(obj, path) {
+  console.log("path is" + (path != ''))
+  if (!isValidDottedPath(path)) {
+    
+    console.log("not isValidDottedPath");
+    //throw $resourceMinErr('badmember', 'Dotted member path "@{0}" is invalid.', path);
+  }
+  // var keys = path.split('.');
+  // for (var i = 0, ii = keys.length; i < ii && angular.isDefined(obj); i++) {
+  //   var key = keys[i];
+  //   obj = (obj !== null) ? obj[key] : undefined;
+  // }
+  // return obj;
+}
+
+lookupDottedPath(null,"@".substr(1))
+
+
 
  url = "http://url.com/id./format?q=x".replace(/\.\/(?=\w+($|\?))/, '.');
 

@@ -15,6 +15,8 @@ var $resourceMinErr = angular.$$minErr('$resource');
 //例如，“zo+”能匹配“zo”以及“zoo”，但不能匹配“z”。+等价于{1,}。
 var MEMBER_NAME_REGEX = /^(\.[a-zA-Z_$@][0-9a-zA-Z_$@]*)+$/;
 
+ //当是'' 的时候返回false
+ //https://stackoverflow.com/questions/48315901/angular-js14195-error-resourcebadmember-dotted-member-path-is-invalid
 function isValidDottedPath(path) {
   return (path != null && path !== '' && path !== 'hasOwnProperty' &&
       MEMBER_NAME_REGEX.test('.' + path));

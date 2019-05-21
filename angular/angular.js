@@ -11574,6 +11574,7 @@ function $HttpProvider() {
     /**
      * Make sure that default param serializer is exposed as a function
      */
+     //保证参数序列化器是个方法
     defaults.paramSerializer = isString(defaults.paramSerializer) ?
       $injector.get(defaults.paramSerializer) : defaults.paramSerializer;
 
