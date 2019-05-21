@@ -1,0 +1,65 @@
+<!doctype html>
+  <html lang="en" ng-app="myapp">
+   <head>
+    <meta charset="UTF-8">
+    <meta name="Generator" content="EditPlus®">
+    <meta name="Author" content="">
+    <meta name="Keywords" content="">
+    <meta name="Description" content="">
+    <title>Document</title>
+    <script src="angular/angular.js"></script>
+    <script src="angular/angular-resource.js"></script>
+   </head>
+   <body>
+    <div ng-controller="MyController">
+    </div>
+     <script >
+       var app=angular.module('myapp',['ngResource']);
+       app.controller('MyController',function($scope,$q,$resource){
+         
+        // var User = $resource('/users/:userId', {userId: '@id'});
+        // User.get({ss: 123}).$promise.then(function(user) {
+        //   user.abc = true;
+        //   user.$save();
+        // });
+
+      
+          var Thing = $resource('/api/things/:id', {id: '@id'}, {
+              save: {
+                method: 'POST',
+                interceptor: {
+                  request: function(config) {
+                    // Before the request is sent out, store a timestamp on the request config
+                    config.requestTimestamp = Date.now();
+                    return config;
+                  },
+                  response: function(response) {
+                    // Get the instance from the response object
+                    var instance = response.resource;
+
+                    // Augment the instance with a custom `saveLatency` property, computed as the time
+                    // between sending the request and receiving the response.
+                    instance.saveLatency = Date.now() - response.config.requestTimestamp;
+
+                    // Return the instance
+                    return instance;
+                  }
+                }
+              }
+            });
+
+            Thing.save({foo: 'bar',id:1}).$promise.then(function(thing) {
+              console.log('That thing was saved in ' + thing.saveLatency + 'ms.');
+            });
+ 
+      });
+
+       app.controller('getCacheController',['$scope','$cacheFactory',
+          function($scope,$cacheFactory){  
+                var cache = $cacheFactory.get('myCache');  
+                var name = cache.get('name');  
+                console.log(name);  //打印john
+            }]);  
+     </script>
+   </body>
+  </html>
